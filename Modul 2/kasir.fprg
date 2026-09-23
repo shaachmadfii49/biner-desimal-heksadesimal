@@ -1,0 +1,57 @@
+<?xml version="1.0"?>
+<flowgorithm fileversion="4.2">
+    <attributes>
+        <attribute name="name" value="kasir"/>
+        <attribute name="authors" value="Keisha Achmad YK"/>
+        <attribute name="about" value=""/>
+        <attribute name="saved" value="2026-09-20 10:49:49 AM"/>
+        <attribute name="created" value="S2Vpc2hhIEFjaG1hZCBZSztLRUlTSEFBQ0hNQURGSUE7MjAyNi0wOS0xNjsxMDozMTozNCBQTTszNzQw"/>
+        <attribute name="edited" value="S2Vpc2hhIEFjaG1hZCBZSztLRUlTSEFBQ0hNQURGSUE7MjAyNi0wOS0yMDsxMDo0OTo0OSBBTTszOzM4NDU="/>
+    </attributes>
+    <function name="Main" type="None" variable="">
+        <parameters/>
+        <body>
+            <declare name="N, kuantitas, i" type="Integer" array="False" size=""/>
+            <declare name="harga, totalBelanja, diskonUtama, diskonMember, totalSetelahDiskon, totalAkhir" type="Real" array="False" size=""/>
+            <declare name="isMember" type="Boolean" array="False" size=""/>
+            <assign variable="totalBelanja" expression="0"/>
+            <output expression="&quot;Masukkan Jumlah Barang: &quot;" newline="True"/>
+            <input variable="N"/>
+            <for variable="i" start="1" end="N" direction="inc" step="1">
+                <output expression="&quot;Harga barang ke-: &quot; &amp; i" newline="True"/>
+                <input variable="harga"/>
+                <output expression="&quot;Kuantitas barang ke-&quot; &amp; i" newline="True"/>
+                <input variable="kuantitas"/>
+                <assign variable="totalbelanja" expression="totalBelanja + (harga * kuantitas)"/>
+            </for>
+            <if expression="totalBelanja &gt;= 500000">
+                <then>
+                    <assign variable="diskonUtama" expression="totalBelanja * 0.20"/>
+                </then>
+                <else>
+                    <if expression="totalBelanja &gt;= 250000">
+                        <then>
+                            <assign variable="diskonUtama" expression="totalBelanja * 0.10"/>
+                        </then>
+                        <else>
+                            <assign variable="diskonUtama" expression="0"/>
+                        </else>
+                    </if>
+                </else>
+            </if>
+            <assign variable="totalSetelahDiskon" expression="totalBelanja - diskonUtama"/>
+            <output expression="&quot;Punya Member?&quot;" newline="True"/>
+            <input variable="isMember"/>
+            <if expression="isMember">
+                <then>
+                    <assign variable="diskonMember" expression="totalSetelahDiskon * 0.05"/>
+                </then>
+                <else>
+                    <assign variable="diskonMember" expression="0"/>
+                </else>
+            </if>
+            <assign variable="totalAkhir" expression="totalSetelahDiskon - diskonMember"/>
+            <output expression="&quot;Total Bayar Akhir: Rp &quot; &amp; totalAkhir" newline="True"/>
+        </body>
+    </function>
+</flowgorithm>
