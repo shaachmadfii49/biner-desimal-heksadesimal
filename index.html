@@ -84,7 +84,7 @@
                 <div class="border-b border-stone-100 pb-4 mb-6">
                     <h2 class="text-xl font-bold text-stone-900 mb-1">Kalkulator Konversi Multi-Basis & Dekomposisi Posisi</h2>
                     <p class="text-stone-600 text-sm">
-                        Pilih basis input (Biner, Desimal, atau Heksadesimal), masukkan nilai, dan perhatikan secara otomatis konversi simultan serta rincian bobot posisional ($R^n$).
+                        Pilih basis input (Biner, Desimal, atau Heksadesimal), masukkan nilai, dan perhatikan secara otomatis konversi simultan serta rincian bobot posisional (<i>R</i><sup><i>n</i></sup>).
                     </p>
                 </div>
 
@@ -151,7 +151,7 @@
                 <!-- Formula Mathematical Breakdown -->
                 <div class="bg-stone-100 p-4 rounded-xl border border-stone-200 mb-6 font-mono text-xs text-stone-800">
                     <span class="font-bold text-stone-600 uppercase block mb-1">Persamaan Konversi Ke Desimal:</span>
-                    <div id="calc-formula-text" class="text-sm font-semibold text-indigo-900 break-all">1F4A₁₆ = (1×4096) + (15×256) + (4×16) + (10×1) = 8010₁₀</div>
+                    <div id="calc-formula-text" class="text-sm font-semibold text-indigo-900 break-all">1F4A<sub>16</sub> = (1×4096) + (15×256) + (4×16) + (10×1) = 8010<sub>10</sub></div>
                 </div>
 
                 <!-- Positional Step-by-Step Table -->
@@ -164,7 +164,7 @@
                                     <th class="p-3">Posisi (Kanan→Kiri)</th>
                                     <th class="p-3">Digit Input</th>
                                     <th class="p-3">Nilai Desimal Digit</th>
-                                    <th class="p-3">Bobot Pangkat (Basisⁿ)</th>
+                                    <th class="p-3">Bobot Pangkat (Basis<sup>n</sup>)</th>
                                     <th class="p-3">Nilai Posisi</th>
                                     <th class="p-3 text-right">Hasil Perkalian</th>
                                 </tr>
@@ -192,7 +192,7 @@
             <div class="bg-white rounded-xl p-6 shadow-sm border border-stone-200">
                 <h2 class="text-xl font-bold text-stone-900 mb-2">Pusat Konsep Sistem Bilangan & Matriks Pemetaan 0-15</h2>
                 <p class="text-stone-600 text-sm leading-relaxed mb-6">
-                    Sistem bilangan digital berakar dari konsep **Radix (Basis)**. Setiap basis menentukan berapa banyak simbol unik yang dipakai. Di bawah ini adalah pemetaan langsung angka 0 hingga 15 dalam Biner, Desimal, dan Heksadesimal beserta penjelasannya.
+                    Sistem bilangan digital berakar dari konsep <strong>Radix (Basis)</strong>. Setiap basis menentukan berapa banyak simbol unik yang dipakai. Di bawah ini adalah pemetaan langsung angka 0 hingga 15 dalam Biner, Desimal, dan Heksadesimal beserta penjelasannya.
                 </p>
 
                 <!-- Interactive 0-15 Matrix Mapper -->
@@ -243,7 +243,7 @@
                             <h3>Sistem Biner (Basis 2)</h3>
                         </div>
                         <p class="text-xs text-stone-600 leading-relaxed">
-                            Hanya menggunakan simbol 0 dan 1. Setiap posisi merepresentasikan perpangkatan 2 ($2^0=1, 2^1=2, 2^2=4, 2^3=8, 2^4=16$). Digunakan oleh prosesor komputer untuk merepresentasikan sinyal tegangan (Off/On).
+                            Hanya menggunakan simbol 0 dan 1. Setiap posisi merepresentasikan perpangkatan 2 (2<sup>0</sup>=1, 2<sup>1</sup>=2, 2<sup>2</sup>=4, 2<sup>3</sup>=8, 2<sup>4</sup>=16). Digunakan oleh prosesor komputer untuk merepresentasikan sinyal tegangan (Off/On).
                         </p>
                     </div>
 
@@ -253,7 +253,7 @@
                             <h3>Sistem Desimal (Basis 10)</h3>
                         </div>
                         <p class="text-xs text-stone-600 leading-relaxed">
-                            Menggunakan 10 simbol (0 hingga 9). Setiap posisi berpangkat 10 ($10^0=1, 10^1=10, 10^2=100$). Sistem standar manusia karena jumlah 10 jari tangan.
+                            Menggunakan 10 simbol (0 hingga 9). Setiap posisi berpangkat 10 (10<sup>0</sup>=1, 10<sup>1</sup>=10, 10<sup>2</sup>=100). Sistem standar manusia karena jumlah 10 jari tangan.
                         </p>
                     </div>
 
@@ -286,7 +286,7 @@
                         </div>
                         <p class="text-xs text-stone-600 leading-relaxed">
                             • <strong>MSB / MSD (Most Significant):</strong> Digit paling kiri dengan bobot terbesar.<br>
-                            • <strong>LSB / LSD (Least Significant):</strong> Digit paling kanan dengan bobot terkecil ($R^0 = 1$).
+                            • <strong>LSB / LSD (Least Significant):</strong> Digit paling kanan dengan bobot terkecil (<i>R</i><sup>0</sup> = 1).
                         </p>
                     </div>
 
@@ -314,8 +314,8 @@
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <!-- Chart 1 Container -->
                     <div class="bg-stone-50 p-4 rounded-xl border border-stone-200">
-                        <h3 class="text-sm font-bold text-stone-800 mb-1">Perbandingan Pertumbuhan Bobot Posisi (Scale Logaritmik)</h3>
-                        <p class="text-xs text-stone-500 mb-4">Membandingkan skala bobot posisi 0 hingga posisi 4 pada $2^n$, $10^n$, dan $16^n$.</p>
+                        <h3 class="text-sm font-bold text-stone-800 mb-1">Perbandingan Pertumbuhan Bobot Posisi (Skala Logaritmik)</h3>
+                        <p class="text-xs text-stone-500 mb-4">Membandingkan skala bobot posisi 0 hingga posisi 4 pada 2<sup>n</sup>, 10<sup>n</sup>, dan 16<sup>n</sup>.</p>
                         <div class="chart-container">
                             <canvas id="chartPowers"></canvas>
                         </div>
@@ -505,7 +505,7 @@
                 resDec.textContent = "N/A";
                 resBin.textContent = "N/A";
                 resHex.textContent = "N/A";
-                formulaText.textContent = "Format input tidak sesuai dengan basis yang dipilih";
+                formulaText.innerHTML = "Format input tidak sesuai dengan basis yang dipilih";
                 barsContainer.innerHTML = '';
                 return;
             }
@@ -555,8 +555,8 @@
             }
 
             // Formula summary
-            const formulaParts = steps.map(s => `(${s.charValue}×${s.powerVal})`);
-            formulaText.textContent = `${inputVal}<sub>${radix}</sub> = ${formulaParts.join(' + ')} = ${decimalVal.toLocaleString()}₁₀`;
+            const formulaParts = steps.map(s => `(${s.charValue}×${s.powerVal.toLocaleString()})`);
+            formulaText.innerHTML = `${inputVal}<sub>${radix}</sub> = ${formulaParts.join(' + ')} = ${decimalVal.toLocaleString()}<sub>10</sub>`;
 
             // Contribution Bars
             steps.forEach(s => {
