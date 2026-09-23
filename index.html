@@ -1,11 +1,16 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="id" class="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Multi-Base Explorer: Biner, Desimal, & Heksadesimal</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+        }
+    </script>
     <!-- Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -24,53 +29,67 @@
             }
         }
         .tab-btn.active {
-            border-bottom: 3px solid #4f46e5;
-            color: #4f46e5;
+            border-bottom: 3px solid #6366f1;
+            color: #6366f1;
             font-weight: 700;
+        }
+        .dark .tab-btn.active {
+            border-bottom: 3px solid #818cf8;
+            color: #818cf8;
         }
     </style>
 </head>
-<!-- Chosen Palette: Warm Neutral & Indigo Tech -->
+<!-- Chosen Palette: Warm Neutral & Indigo Tech (Supports Light & Dark Modes) -->
 <!-- Application Structure Plan:
-    1. Header & Navigation: Clean responsive tab header supporting navigation across converter, concepts, comparative charts, and multi-mode practice.
-    2. Section 1 (Kalkulator Multi-Basis & Step-by-Step Breakdown): Flexible conversion tool supporting input in Binary (Basis 2), Decimal (Basis 10), or Hexadecimal (Basis 16) with instant cross-conversion cards, positional weight decomposition table (2^n, 10^n, or 16^n), and percentage contribution bars.
-    3. Section 2 (Pusat Konsep & Matriks Pemetaan 0-15): Educational guide covering core systems (Biner, Desimal, Heksadesimal, Byte/Nibble) and an interactive 0-15 lookup matrix showing Hex, Decimal, and 4-bit Binary representations with visual bit box toggles.
-    4. Section 3 (Analisis Grafik & Perbandingan Basis): Chart.js visualizations demonstrating exponential growth differences between 2^n, 10^n, and 16^n on logarithmic scale, plus maximum representation capacities.
-    5. Section 4 (Modul Latihan Mandiri Multi-Mode): Configurable practice module supporting 5 conversion types (Biner->Desimal, Desimal->Biner, Hex->Desimal, Desimal->Hex, Biner->Hex) with step-by-step solution breakdowns.
+    1. Header & Navigation: Clean responsive header with basis badges, tab navigation, and interactive Theme Switcher (Light / Dark Mode).
+    2. Section 1 (Kalkulator Multi-Basis & Step-by-Step Breakdown): Converter supporting Binary (Basis 2), Decimal (Basis 10), and Hexadecimal (Basis 16) with immediate cross-conversion cards, positional weight decomposition table (2^n, 10^n, or 16^n), and percentage contribution bars.
+    3. Section 2 (Pusat Konsep & Matriks Pemetaan 0-15): Educational guides on digital number systems and interactive 0-15 symbol matrix with live 4-bit nibble visualizer.
+    4. Section 3 (Analisis Grafik & Perbandingan Basis): Interactive Chart.js graphs illustrating exponential growth (2^n vs 10^n vs 16^n) and system max value capacity limits with dynamic theme coloring.
+    5. Section 4 (Modul Latihan Mandiri Multi-Mode): Configurable quiz tool with 5 conversion types, instant verification, and step-by-step solution hints.
 -->
 <!-- Visualization & Content Choices:
-    - Comparative Positional Growth -> Chart.js Logarithmic Line Chart -> Compares 2^n, 10^n, 16^n growth across positions 0-7 -> Demonstrates how higher bases condense information -> Chart.js Canvas
-    - Bit & Digit Capacity Comparison -> Chart.js Grouped Bar Chart -> Compares max decimal value achievable by 4-bit/8-bit binary vs 2-digit hex vs decimal -> Chart.js Canvas
-    - Interactive 0-15 Symbol Matrix -> Styled Grid Buttons & Nibble Visualizer -> Live selection displays 4 bit states (0/1) -> Pure Vanilla JS
-    - Multi-Base Step Breakdown -> HTML Table + Dynamic Contribution Bars -> Recalculates dynamically based on selected source radix -> Vanilla JS DOM manipulation
+    - Comparative Positional Growth -> Chart.js Logarithmic Line Chart -> Dynamic dark/light axis color adjustments -> Chart.js Canvas
+    - Bit & Digit Capacity Comparison -> Chart.js Logarithmic Bar Chart -> Dynamic dark/light grid color updates -> Chart.js Canvas
+    - Interactive 0-15 Symbol Matrix -> Theme-responsive Grid Buttons & Nibble Visualizer -> Live bit state toggling -> Pure Vanilla JS
+    - Multi-Base Step Breakdown -> Responsive HTML Table + Dynamic Contribution Bars -> Recalculates dynamically with dark mode styling -> Vanilla JS DOM
     - CONFIRMATION: NO SVG graphics used. NO Mermaid JS used.
 -->
 <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
-<body class="bg-stone-50 text-stone-800 font-sans antialiased min-h-screen flex flex-col">
+<body class="bg-stone-50 dark:bg-stone-950 text-stone-800 dark:text-stone-100 font-sans antialiased min-h-screen flex flex-col transition-colors duration-200">
 
     <!-- Header & Navigation Bar -->
-    <header class="bg-white border-b border-stone-200 sticky top-0 z-30 shadow-sm">
+    <header class="bg-white dark:bg-stone-900 border-b border-stone-200 dark:border-stone-800 sticky top-0 z-30 shadow-sm transition-colors duration-200">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-16">
                 <div class="flex items-center space-x-3">
                     <span class="text-2xl">🧮</span>
                     <div>
-                        <h1 class="text-lg sm:text-xl font-bold text-stone-900 leading-tight">Multi-Base <span class="text-indigo-600"> Explorer</span></h1>
-                        <p class="text-xs text-stone-500 hidden sm:block">Panduan Interaktif Konversi Biner, Desimal, & Heksadesimal</p>
+                        <h1 class="text-lg sm:text-xl font-bold text-stone-900 dark:text-white leading-tight">Multi-Base <span class="text-indigo-600 dark:text-indigo-400"> Explorer</span></h1>
+                        <p class="text-xs text-stone-500 dark:text-stone-400 hidden sm:block">Panduan Interaktif Konversi Biner, Desimal, & Heksadesimal</p>
                     </div>
                 </div>
-                <div class="flex items-center space-x-2">
-                    <span class="text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-md border border-emerald-200">Basis 2</span>
-                    <span class="text-[11px] font-semibold text-amber-700 bg-amber-50 px-2.5 py-1 rounded-md border border-amber-200">Basis 10</span>
-                    <span class="text-[11px] font-semibold text-indigo-700 bg-indigo-50 px-2.5 py-1 rounded-md border border-indigo-200">Basis 16</span>
+                
+                <div class="flex items-center space-x-2 sm:space-x-3">
+                    <div class="hidden sm:flex items-center space-x-2">
+                        <span class="text-[11px] font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/80 px-2.5 py-1 rounded-md border border-emerald-200 dark:border-emerald-800">Basis 2</span>
+                        <span class="text-[11px] font-semibold text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/80 px-2.5 py-1 rounded-md border border-amber-200 dark:border-amber-800">Basis 10</span>
+                        <span class="text-[11px] font-semibold text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-950/80 px-2.5 py-1 rounded-md border border-indigo-200 dark:border-indigo-800">Basis 16</span>
+                    </div>
+
+                    <!-- Theme Toggle Button -->
+                    <button onclick="toggleTheme()" id="theme-toggle-btn" class="px-3 py-1.5 rounded-lg bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 border border-stone-300 dark:border-stone-700 text-stone-700 dark:text-stone-200 text-xs font-semibold flex items-center space-x-1.5 transition-colors">
+                        <span id="theme-btn-icon">🌙</span>
+                        <span id="theme-btn-text" class="hidden xs:inline">Mode Gelap</span>
+                    </button>
                 </div>
             </div>
+
             <!-- Navigation Tabs -->
-            <nav class="flex space-x-4 sm:space-x-8 overflow-x-auto text-xs sm:text-sm font-medium border-t border-stone-100 py-2">
-                <button onclick="switchTab('calculator')" id="tab-calculator" class="tab-btn active whitespace-nowrap pb-1 transition-colors">⚡ Kalkulator & Breakdown</button>
-                <button onclick="switchTab('concepts')" id="tab-concepts" class="tab-btn whitespace-nowrap pb-1 transition-colors">💡 Konsep & Matriks 0-15</button>
-                <button onclick="switchTab('analytics')" id="tab-analytics" class="tab-btn whitespace-nowrap pb-1 transition-colors">📈 Grafik Perbandingan</button>
-                <button onclick="switchTab('practice')" id="tab-practice" class="tab-btn whitespace-nowrap pb-1 transition-colors">🎯 Latihan Mandiri</button>
+            <nav class="flex space-x-4 sm:space-x-8 overflow-x-auto text-xs sm:text-sm font-medium border-t border-stone-100 dark:border-stone-800 py-2">
+                <button onclick="switchTab('calculator')" id="tab-calculator" class="tab-btn active whitespace-nowrap pb-1 transition-colors text-stone-600 dark:text-stone-400">⚡ Kalkulator & Breakdown</button>
+                <button onclick="switchTab('concepts')" id="tab-concepts" class="tab-btn whitespace-nowrap pb-1 transition-colors text-stone-600 dark:text-stone-400">💡 Konsep & Matriks 0-15</button>
+                <button onclick="switchTab('analytics')" id="tab-analytics" class="tab-btn whitespace-nowrap pb-1 transition-colors text-stone-600 dark:text-stone-400">📈 Grafik Perbandingan</button>
+                <button onclick="switchTab('practice')" id="tab-practice" class="tab-btn whitespace-nowrap pb-1 transition-colors text-stone-600 dark:text-stone-400">🎯 Latihan Mandiri</button>
             </nav>
         </div>
     </header>
@@ -80,10 +99,10 @@
 
         <!-- SECTION 1: MULTI-BASE CALCULATOR & BREAKDOWN -->
         <section id="sec-calculator" class="space-y-6">
-            <div class="bg-white rounded-xl p-6 shadow-sm border border-stone-200">
-                <div class="border-b border-stone-100 pb-4 mb-6">
-                    <h2 class="text-xl font-bold text-stone-900 mb-1">Kalkulator Konversi Multi-Basis & Dekomposisi Posisi</h2>
-                    <p class="text-stone-600 text-sm">
+            <div class="bg-white dark:bg-stone-900 rounded-xl p-6 shadow-sm border border-stone-200 dark:border-stone-800 transition-colors">
+                <div class="border-b border-stone-100 dark:border-stone-800 pb-4 mb-6">
+                    <h2 class="text-xl font-bold text-stone-900 dark:text-white mb-1">Kalkulator Konversi Multi-Basis & Dekomposisi Posisi</h2>
+                    <p class="text-stone-600 dark:text-stone-400 text-sm">
                         Pilih basis input (Biner, Desimal, atau Heksadesimal), masukkan nilai, dan perhatikan secara otomatis konversi simultan serta rincian bobot posisional (<i>R</i><sup><i>n</i></sup>).
                     </p>
                 </div>
@@ -91,8 +110,8 @@
                 <!-- Input Controls Grid -->
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                     <div>
-                        <label for="source-radix" class="block text-xs font-semibold text-stone-600 uppercase mb-1">Pilih Basis Input</label>
-                        <select id="source-radix" onchange="onRadixChange()" class="w-full text-sm font-bold px-3 py-3 bg-stone-50 border border-stone-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                        <label for="source-radix" class="block text-xs font-semibold text-stone-600 dark:text-stone-400 uppercase mb-1">Pilih Basis Input</label>
+                        <select id="source-radix" onchange="onRadixChange()" class="w-full text-sm font-bold px-3 py-3 bg-stone-50 dark:bg-stone-800 border border-stone-300 dark:border-stone-700 text-stone-900 dark:text-stone-100 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
                             <option value="16">Heksadesimal (Basis 16: 0-9, A-F)</option>
                             <option value="2">Biner (Basis 2: 0, 1)</option>
                             <option value="10">Desimal (Basis 10: 0-9)</option>
@@ -100,15 +119,15 @@
                     </div>
 
                     <div class="md:col-span-2">
-                        <label for="multi-input" class="block text-xs font-semibold text-stone-600 uppercase mb-1">Input Nilai</label>
+                        <label for="multi-input" class="block text-xs font-semibold text-stone-600 dark:text-stone-400 uppercase mb-1">Input Nilai</label>
                         <div class="flex space-x-2">
                             <div class="relative flex-grow">
                                 <input type="text" id="multi-input" value="1F4A" maxlength="16" 
-                                    class="w-full text-xl font-mono uppercase font-bold tracking-wider px-4 py-2.5 bg-stone-50 border border-stone-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                                    class="w-full text-xl font-mono uppercase font-bold tracking-wider px-4 py-2.5 bg-stone-50 dark:bg-stone-800 border border-stone-300 dark:border-stone-700 text-stone-900 dark:text-stone-100 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"
                                     oninput="calculateMultiBase()">
                                 <span id="input-radix-badge" class="absolute right-3 top-3 text-xs font-bold text-stone-400 font-mono">16</span>
                             </div>
-                            <button onclick="setRandomPreset()" class="px-4 py-2.5 bg-stone-100 hover:bg-stone-200 text-stone-700 font-medium rounded-lg text-xs transition-colors flex items-center justify-center space-x-1 whitespace-nowrap">
+                            <button onclick="setRandomPreset()" class="px-4 py-2.5 bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 border border-stone-200 dark:border-stone-700 text-stone-700 dark:text-stone-300 font-medium rounded-lg text-xs transition-colors flex items-center justify-center space-x-1 whitespace-nowrap">
                                 <span>🎲 Contoh Acak</span>
                             </button>
                         </div>
@@ -118,7 +137,7 @@
                 <!-- Cross-Base Results Display Cards -->
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                     <!-- Decimal Card -->
-                    <div class="bg-amber-900/90 text-white p-4 rounded-xl shadow-sm border border-amber-800">
+                    <div class="bg-amber-900/90 dark:bg-amber-950 text-white p-4 rounded-xl shadow-sm border border-amber-800 dark:border-amber-900">
                         <div class="text-xs text-amber-200 uppercase tracking-widest font-semibold flex justify-between">
                             <span>Desimal (Basis 10)</span>
                             <span class="font-mono">10</span>
@@ -128,7 +147,7 @@
                     </div>
 
                     <!-- Binary Card -->
-                    <div class="bg-emerald-900/90 text-white p-4 rounded-xl shadow-sm border border-emerald-800">
+                    <div class="bg-emerald-900/90 dark:bg-emerald-950 text-white p-4 rounded-xl shadow-sm border border-emerald-800 dark:border-emerald-900">
                         <div class="text-xs text-emerald-200 uppercase tracking-widest font-semibold flex justify-between">
                             <span>Biner (Basis 2)</span>
                             <span class="font-mono">2</span>
@@ -138,7 +157,7 @@
                     </div>
 
                     <!-- Hex Card -->
-                    <div class="bg-indigo-900 text-white p-4 rounded-xl shadow-sm border border-indigo-800">
+                    <div class="bg-indigo-900 dark:bg-indigo-950 text-white p-4 rounded-xl shadow-sm border border-indigo-800 dark:border-indigo-900">
                         <div class="text-xs text-indigo-200 uppercase tracking-widest font-semibold flex justify-between">
                             <span>Heksadesimal (Basis 16)</span>
                             <span class="font-mono">16</span>
@@ -149,18 +168,18 @@
                 </div>
 
                 <!-- Formula Mathematical Breakdown -->
-                <div class="bg-stone-100 p-4 rounded-xl border border-stone-200 mb-6 font-mono text-xs text-stone-800">
-                    <span class="font-bold text-stone-600 uppercase block mb-1">Persamaan Konversi Ke Desimal:</span>
-                    <div id="calc-formula-text" class="text-sm font-semibold text-indigo-900 break-all">1F4A<sub>16</sub> = (1×4096) + (15×256) + (4×16) + (10×1) = 8010<sub>10</sub></div>
+                <div class="bg-stone-100 dark:bg-stone-800/80 p-4 rounded-xl border border-stone-200 dark:border-stone-700 mb-6 font-mono text-xs text-stone-800 dark:text-stone-200">
+                    <span class="font-bold text-stone-500 dark:text-stone-400 uppercase block mb-1">Persamaan Konversi Ke Desimal:</span>
+                    <div id="calc-formula-text" class="text-sm font-semibold text-indigo-900 dark:text-indigo-300 break-all">1F4A<sub>16</sub> = (1×4096) + (15×256) + (4×16) + (10×1) = 8010<sub>10</sub></div>
                 </div>
 
                 <!-- Positional Step-by-Step Table -->
                 <div>
-                    <h3 class="text-md font-bold text-stone-800 mb-3" id="table-title">Rincian Bobot Posisional Input Basis 16</h3>
+                    <h3 class="text-md font-bold text-stone-800 dark:text-stone-200 mb-3" id="table-title">Rincian Bobot Posisional Input Basis 16</h3>
                     <div class="overflow-x-auto">
                         <table class="w-full text-left text-sm border-collapse">
                             <thead>
-                                <tr class="bg-stone-100 text-stone-600 border-b border-stone-200 text-xs font-semibold">
+                                <tr class="bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-300 border-b border-stone-200 dark:border-stone-700 text-xs font-semibold">
                                     <th class="p-3">Posisi (Kanan→Kiri)</th>
                                     <th class="p-3">Digit Input</th>
                                     <th class="p-3">Nilai Desimal Digit</th>
@@ -169,7 +188,7 @@
                                     <th class="p-3 text-right">Hasil Perkalian</th>
                                 </tr>
                             </thead>
-                            <tbody id="calc-table-body" class="divide-y divide-stone-200 font-mono">
+                            <tbody id="calc-table-body" class="divide-y divide-stone-200 dark:divide-stone-800 font-mono">
                                 <!-- Populated by JS -->
                             </tbody>
                         </table>
@@ -177,9 +196,9 @@
                 </div>
 
                 <!-- Visual Bar Breakdown of Contribution -->
-                <div class="mt-6 pt-4 border-t border-stone-200">
-                    <h3 class="text-md font-bold text-stone-800 mb-2">Proporsi Kontribusi Setiap Digit terhadap Total Desimal</h3>
-                    <p class="text-xs text-stone-500 mb-3">Makin ke kiri posisi digit (MSD/MSB), makin dominan nilainya terhadap total desimal.</p>
+                <div class="mt-6 pt-4 border-t border-stone-200 dark:border-stone-800">
+                    <h3 class="text-md font-bold text-stone-800 dark:text-stone-200 mb-2">Proporsi Kontribusi Setiap Digit terhadap Total Desimal</h3>
+                    <p class="text-xs text-stone-500 dark:text-stone-400 mb-3">Makin ke kiri posisi digit (MSD/MSB), makin dominan nilainya terhadap total desimal.</p>
                     <div id="calc-contribution-bars" class="space-y-2">
                         <!-- Populated by JS -->
                     </div>
@@ -189,43 +208,43 @@
 
         <!-- SECTION 2: CONCEPTS & 0-15 MATRIX -->
         <section id="sec-concepts" class="space-y-6 hidden">
-            <div class="bg-white rounded-xl p-6 shadow-sm border border-stone-200">
-                <h2 class="text-xl font-bold text-stone-900 mb-2">Pusat Konsep Sistem Bilangan & Matriks Pemetaan 0-15</h2>
-                <p class="text-stone-600 text-sm leading-relaxed mb-6">
+            <div class="bg-white dark:bg-stone-900 rounded-xl p-6 shadow-sm border border-stone-200 dark:border-stone-800 transition-colors">
+                <h2 class="text-xl font-bold text-stone-900 dark:text-white mb-2">Pusat Konsep Sistem Bilangan & Matriks Pemetaan 0-15</h2>
+                <p class="text-stone-600 dark:text-stone-400 text-sm leading-relaxed mb-6">
                     Sistem bilangan digital berakar dari konsep <strong>Radix (Basis)</strong>. Setiap basis menentukan berapa banyak simbol unik yang dipakai. Di bawah ini adalah pemetaan langsung angka 0 hingga 15 dalam Biner, Desimal, dan Heksadesimal beserta penjelasannya.
                 </p>
 
                 <!-- Interactive 0-15 Matrix Mapper -->
-                <div class="bg-stone-50 p-5 rounded-xl border border-stone-200 mb-6">
-                    <h3 class="text-sm font-bold text-stone-800 uppercase tracking-wider mb-3">Matriks Interaktif Pemetaan Nilai 0-15 (Klik Angka)</h3>
+                <div class="bg-stone-50 dark:bg-stone-800/50 p-5 rounded-xl border border-stone-200 dark:border-stone-800 mb-6">
+                    <h3 class="text-sm font-bold text-stone-800 dark:text-stone-200 uppercase tracking-wider mb-3">Matriks Interaktif Pemetaan Nilai 0-15 (Klik Angka)</h3>
                     <div class="grid grid-cols-4 sm:grid-cols-8 md:grid-cols-16 gap-2" id="matrix-buttons">
                         <!-- Populated by JS -->
                     </div>
                     
                     <!-- Selected Symbol Inspector -->
-                    <div id="matrix-inspector" class="mt-4 p-5 bg-white rounded-lg border border-indigo-200 flex flex-col md:flex-row items-center justify-between gap-6">
+                    <div id="matrix-inspector" class="mt-4 p-5 bg-white dark:bg-stone-900 rounded-lg border border-indigo-200 dark:border-indigo-900 flex flex-col md:flex-row items-center justify-between gap-6 shadow-sm">
                         <div class="flex items-center space-x-6">
                             <div class="text-center">
-                                <span class="text-xs text-stone-400 block font-semibold uppercase">Desimal</span>
-                                <span id="inspect-dec" class="text-3xl font-extrabold font-mono text-amber-600">10</span>
+                                <span class="text-xs text-stone-400 dark:text-stone-500 block font-semibold uppercase">Desimal</span>
+                                <span id="inspect-dec" class="text-3xl font-extrabold font-mono text-amber-600 dark:text-amber-400">10</span>
                             </div>
                             <div class="text-center">
-                                <span class="text-xs text-stone-400 block font-semibold uppercase">Hex</span>
-                                <span id="inspect-hex" class="text-3xl font-extrabold font-mono text-indigo-600">A</span>
+                                <span class="text-xs text-stone-400 dark:text-stone-500 block font-semibold uppercase">Hex</span>
+                                <span id="inspect-hex" class="text-3xl font-extrabold font-mono text-indigo-600 dark:text-indigo-400">A</span>
                             </div>
                             <div class="text-center">
-                                <span class="text-xs text-stone-400 block font-semibold uppercase">Biner (4-bit)</span>
-                                <span id="inspect-bin" class="text-2xl font-bold font-mono text-emerald-600">1010</span>
+                                <span class="text-xs text-stone-400 dark:text-stone-500 block font-semibold uppercase">Biner (4-bit)</span>
+                                <span id="inspect-bin" class="text-2xl font-bold font-mono text-emerald-600 dark:text-emerald-400">1010</span>
                             </div>
                         </div>
 
                         <!-- Bit Box Visualizer -->
-                        <div class="bg-stone-50 p-3 rounded-lg border border-stone-200 flex flex-col items-center">
-                            <span class="text-[11px] font-bold text-stone-500 uppercase mb-2">Visualisasi 4 Bit (1 Nibble)</span>
+                        <div class="bg-stone-50 dark:bg-stone-800 p-3 rounded-lg border border-stone-200 dark:border-stone-700 flex flex-col items-center">
+                            <span class="text-[11px] font-bold text-stone-500 dark:text-stone-400 uppercase mb-2">Visualisasi 4 Bit (1 Nibble)</span>
                             <div class="flex space-x-2 font-mono font-bold text-sm" id="bit-boxes">
                                 <!-- Populated by JS -->
                             </div>
-                            <div class="flex justify-between w-full text-[10px] text-stone-400 mt-1 font-mono">
+                            <div class="flex justify-between w-full text-[10px] text-stone-400 dark:text-stone-500 mt-1 font-mono">
                                 <span>8 (2³)</span>
                                 <span>4 (2²)</span>
                                 <span>2 (2¹)</span>
@@ -237,65 +256,65 @@
 
                 <!-- Core Concept Cards Grid -->
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div class="p-5 bg-white border border-stone-200 rounded-xl hover:border-emerald-300 transition-colors">
-                        <div class="flex items-center space-x-2 text-emerald-700 font-bold mb-2">
+                    <div class="p-5 bg-white dark:bg-stone-800/40 border border-stone-200 dark:border-stone-800 rounded-xl hover:border-emerald-300 dark:hover:border-emerald-700 transition-colors">
+                        <div class="flex items-center space-x-2 text-emerald-700 dark:text-emerald-400 font-bold mb-2">
                             <span>0️⃣1️⃣</span>
                             <h3>Sistem Biner (Basis 2)</h3>
                         </div>
-                        <p class="text-xs text-stone-600 leading-relaxed">
+                        <p class="text-xs text-stone-600 dark:text-stone-400 leading-relaxed">
                             Hanya menggunakan simbol 0 dan 1. Setiap posisi merepresentasikan perpangkatan 2 (2<sup>0</sup>=1, 2<sup>1</sup>=2, 2<sup>2</sup>=4, 2<sup>3</sup>=8, 2<sup>4</sup>=16). Digunakan oleh prosesor komputer untuk merepresentasikan sinyal tegangan (Off/On).
                         </p>
                     </div>
 
-                    <div class="p-5 bg-white border border-stone-200 rounded-xl hover:border-amber-300 transition-colors">
-                        <div class="flex items-center space-x-2 text-amber-700 font-bold mb-2">
+                    <div class="p-5 bg-white dark:bg-stone-800/40 border border-stone-200 dark:border-stone-800 rounded-xl hover:border-amber-300 dark:hover:border-amber-700 transition-colors">
+                        <div class="flex items-center space-x-2 text-amber-700 dark:text-amber-400 font-bold mb-2">
                             <span>🔢</span>
                             <h3>Sistem Desimal (Basis 10)</h3>
                         </div>
-                        <p class="text-xs text-stone-600 leading-relaxed">
+                        <p class="text-xs text-stone-600 dark:text-stone-400 leading-relaxed">
                             Menggunakan 10 simbol (0 hingga 9). Setiap posisi berpangkat 10 (10<sup>0</sup>=1, 10<sup>1</sup>=10, 10<sup>2</sup>=100). Sistem standar manusia karena jumlah 10 jari tangan.
                         </p>
                     </div>
 
-                    <div class="p-5 bg-white border border-stone-200 rounded-xl hover:border-indigo-300 transition-colors">
-                        <div class="flex items-center space-x-2 text-indigo-700 font-bold mb-2">
+                    <div class="p-5 bg-white dark:bg-stone-800/40 border border-stone-200 dark:border-stone-800 rounded-xl hover:border-indigo-300 dark:hover:border-indigo-700 transition-colors">
+                        <div class="flex items-center space-x-2 text-indigo-700 dark:text-indigo-400 font-bold mb-2">
                             <span>🔠</span>
                             <h3>Sistem Heksadesimal (Basis 16)</h3>
                         </div>
-                        <p class="text-xs text-stone-600 leading-relaxed">
+                        <p class="text-xs text-stone-600 dark:text-stone-400 leading-relaxed">
                             Menggunakan 16 simbol: 0-9 dan A-F (A=10, B=11, C=12, D=13, E=14, F=15). Sangat efisien karena 1 digit hex mewakili persis 4 bit biner (1 nibble).
                         </p>
                     </div>
 
-                    <div class="p-5 bg-white border border-stone-200 rounded-xl hover:border-stone-400 transition-colors">
-                        <div class="flex items-center space-x-2 text-stone-800 font-bold mb-2">
+                    <div class="p-5 bg-white dark:bg-stone-800/40 border border-stone-200 dark:border-stone-800 rounded-xl hover:border-stone-400 dark:hover:border-stone-600 transition-colors">
+                        <div class="flex items-center space-x-2 text-stone-800 dark:text-stone-200 font-bold mb-2">
                             <span>💡</span>
                             <h3>Istilah: Bit, Nibble, & Byte</h3>
                         </div>
-                        <p class="text-xs text-stone-600 leading-relaxed">
+                        <p class="text-xs text-stone-600 dark:text-stone-400 leading-relaxed">
                             • <strong>1 Bit:</strong> 1 digit biner (0 atau 1).<br>
                             • <strong>1 Nibble:</strong> Kumpulan 4 bit (setara 1 digit hex).<br>
                             • <strong>1 Byte:</strong> Kumpulan 8 bit (setara 2 digit hex, max 255).
                         </p>
                     </div>
 
-                    <div class="p-5 bg-white border border-stone-200 rounded-xl hover:border-stone-400 transition-colors">
-                        <div class="flex items-center space-x-2 text-stone-800 font-bold mb-2">
+                    <div class="p-5 bg-white dark:bg-stone-800/40 border border-stone-200 dark:border-stone-800 rounded-xl hover:border-stone-400 dark:hover:border-stone-600 transition-colors">
+                        <div class="flex items-center space-x-2 text-stone-800 dark:text-stone-200 font-bold mb-2">
                             <span>⬅️➡️</span>
                             <h3>MSD/MSB vs LSD/LSB</h3>
                         </div>
-                        <p class="text-xs text-stone-600 leading-relaxed">
+                        <p class="text-xs text-stone-600 dark:text-stone-400 leading-relaxed">
                             • <strong>MSB / MSD (Most Significant):</strong> Digit paling kiri dengan bobot terbesar.<br>
                             • <strong>LSB / LSD (Least Significant):</strong> Digit paling kanan dengan bobot terkecil (<i>R</i><sup>0</sup> = 1).
                         </p>
                     </div>
 
-                    <div class="p-5 bg-white border border-stone-200 rounded-xl hover:border-stone-400 transition-colors">
-                        <div class="flex items-center space-x-2 text-stone-800 font-bold mb-2">
+                    <div class="p-5 bg-white dark:bg-stone-800/40 border border-stone-200 dark:border-stone-800 rounded-xl hover:border-stone-400 dark:hover:border-stone-600 transition-colors">
+                        <div class="flex items-center space-x-2 text-stone-800 dark:text-stone-200 font-bold mb-2">
                             <span>🔄</span>
                             <h3>Hubungan Biner & Heksadesimal</h3>
                         </div>
-                        <p class="text-xs text-stone-600 leading-relaxed">
+                        <p class="text-xs text-stone-600 dark:text-stone-400 leading-relaxed">
                             Konversi biner ke heksadesimal sangat mudah: cukup bagi digit biner menjadi kelompok-kelompok 4 bit dari kanan, lalu ubah setiap kelompok 4-bit secara langsung ke karakter hexnya.
                         </p>
                     </div>
@@ -305,26 +324,26 @@
 
         <!-- SECTION 3: ANALYTICS & COMPARATIVE CHARTS -->
         <section id="sec-analytics" class="space-y-6 hidden">
-            <div class="bg-white rounded-xl p-6 shadow-sm border border-stone-200">
-                <h2 class="text-xl font-bold text-stone-900 mb-2">Analisis Grafik & Perbandingan Efisiensi Basis</h2>
-                <p class="text-stone-600 text-sm leading-relaxed mb-6">
+            <div class="bg-white dark:bg-stone-900 rounded-xl p-6 shadow-sm border border-stone-200 dark:border-stone-800 transition-colors">
+                <h2 class="text-xl font-bold text-stone-900 dark:text-white mb-2">Analisis Grafik & Perbandingan Efisiensi Basis</h2>
+                <p class="text-stone-600 dark:text-stone-400 text-sm leading-relaxed mb-6">
                     Grafik di bawah ini menggambarkan pertumbuhan eksponensial bobot posisi pada Basis 2, Basis 10, dan Basis 16, serta membandingkan kapasitas maksimum nilai yang dapat ditampung oleh digit/bit masing-masing basis.
                 </p>
 
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <!-- Chart 1 Container -->
-                    <div class="bg-stone-50 p-4 rounded-xl border border-stone-200">
-                        <h3 class="text-sm font-bold text-stone-800 mb-1">Perbandingan Pertumbuhan Bobot Posisi (Skala Logaritmik)</h3>
-                        <p class="text-xs text-stone-500 mb-4">Membandingkan skala bobot posisi 0 hingga posisi 4 pada 2<sup>n</sup>, 10<sup>n</sup>, dan 16<sup>n</sup>.</p>
+                    <div class="bg-stone-50 dark:bg-stone-800/50 p-4 rounded-xl border border-stone-200 dark:border-stone-800">
+                        <h3 class="text-sm font-bold text-stone-800 dark:text-stone-200 mb-1">Perbandingan Pertumbuhan Bobot Posisi (Skala Logaritmik)</h3>
+                        <p class="text-xs text-stone-500 dark:text-stone-400 mb-4">Membandingkan skala bobot posisi 0 hingga posisi 4 pada 2<sup>n</sup>, 10<sup>n</sup>, dan 16<sup>n</sup>.</p>
                         <div class="chart-container">
                             <canvas id="chartPowers"></canvas>
                         </div>
                     </div>
 
                     <!-- Chart 2 Container -->
-                    <div class="bg-stone-50 p-4 rounded-xl border border-stone-200">
-                        <h3 class="text-sm font-bold text-stone-800 mb-1">Kapasitas Nilai Maksimum Sistem</h3>
-                        <p class="text-xs text-stone-500 mb-4">Membandingkan kapasitas maksimum desimal untuk 4-bit, 8-bit, 2-digit Hex, dan 3-digit Desimal.</p>
+                    <div class="bg-stone-50 dark:bg-stone-800/50 p-4 rounded-xl border border-stone-200 dark:border-stone-800">
+                        <h3 class="text-sm font-bold text-stone-800 dark:text-stone-200 mb-1">Kapasitas Nilai Maksimum Sistem</h3>
+                        <p class="text-xs text-stone-500 dark:text-stone-400 mb-4">Membandingkan kapasitas maksimum desimal untuk 4-bit, 8-bit, 2-digit Hex, dan 3-digit Desimal.</p>
                         <div class="chart-container">
                             <canvas id="chartCapacity"></canvas>
                         </div>
@@ -335,17 +354,17 @@
 
         <!-- SECTION 4: MULTI-MODE PRACTICE -->
         <section id="sec-practice" class="space-y-6 hidden">
-            <div class="bg-white rounded-xl p-6 shadow-sm border border-stone-200">
-                <h2 class="text-xl font-bold text-stone-900 mb-2">Modul Latihan Mandiri Multi-Mode</h2>
-                <p class="text-stone-600 text-sm leading-relaxed mb-6">
+            <div class="bg-white dark:bg-stone-900 rounded-xl p-6 shadow-sm border border-stone-200 dark:border-stone-800 transition-colors">
+                <h2 class="text-xl font-bold text-stone-900 dark:text-white mb-2">Modul Latihan Mandiri Multi-Mode</h2>
+                <p class="text-stone-600 dark:text-stone-400 text-sm leading-relaxed mb-6">
                     Pilih jenis konversi yang ingin Anda latih! Sistem akan menghasilkan soal acak sesuai konfigurasi yang Anda pilih.
                 </p>
 
-                <div class="max-w-xl mx-auto bg-stone-50 p-6 rounded-xl border border-stone-200 text-center space-y-4">
+                <div class="max-w-xl mx-auto bg-stone-50 dark:bg-stone-800/50 p-6 rounded-xl border border-stone-200 dark:border-stone-800 text-center space-y-4">
                     <!-- Quiz Type Selector -->
                     <div>
-                        <label for="practice-type" class="block text-xs font-semibold text-stone-600 uppercase mb-1">Mode Latihan</label>
-                        <select id="practice-type" onchange="generatePracticeQuestion()" class="w-full text-sm font-bold px-3 py-2 bg-white border border-stone-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                        <label for="practice-type" class="block text-xs font-semibold text-stone-600 dark:text-stone-400 uppercase mb-1">Mode Latihan</label>
+                        <select id="practice-type" onchange="generatePracticeQuestion()" class="w-full text-sm font-bold px-3 py-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 text-stone-900 dark:text-stone-100 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
                             <option value="bin2dec">Biner ➔ Desimal</option>
                             <option value="dec2bin">Desimal ➔ Biner</option>
                             <option value="hex2dec" selected>Heksadesimal ➔ Desimal</option>
@@ -354,22 +373,22 @@
                         </select>
                     </div>
 
-                    <div class="text-xs font-semibold text-stone-500 uppercase tracking-widest pt-2">Soal Anda:</div>
-                    <div id="practice-question-display" class="text-3xl sm:text-4xl font-extrabold font-mono text-indigo-700 tracking-widest bg-white py-4 px-6 rounded-lg border border-stone-200 shadow-inner inline-block break-all">
+                    <div class="text-xs font-semibold text-stone-500 dark:text-stone-400 uppercase tracking-widest pt-2">Soal Anda:</div>
+                    <div id="practice-question-display" class="text-3xl sm:text-4xl font-extrabold font-mono text-indigo-700 dark:text-indigo-400 tracking-widest bg-white dark:bg-stone-900 py-4 px-6 rounded-lg border border-stone-200 dark:border-stone-700 shadow-inner inline-block break-all">
                         3C8₁₆ = ...₁₀
                     </div>
 
                     <div class="pt-2">
-                        <label for="practice-user-input" class="block text-xs font-semibold text-stone-600 mb-1">Masukkan Hasil Konversi Anda:</label>
+                        <label for="practice-user-input" class="block text-xs font-semibold text-stone-600 dark:text-stone-400 mb-1">Masukkan Hasil Konversi Anda:</label>
                         <input type="text" id="practice-user-input" placeholder="Jawaban..." 
-                            class="w-full text-center text-lg font-mono font-bold py-2 px-3 border border-stone-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none max-w-xs mx-auto uppercase">
+                            class="w-full text-center text-lg font-mono font-bold py-2 px-3 bg-white dark:bg-stone-900 text-stone-900 dark:text-stone-100 border border-stone-300 dark:border-stone-700 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none max-w-xs mx-auto uppercase">
                     </div>
 
                     <div class="flex justify-center space-x-3 pt-2">
-                        <button onclick="checkPracticeAnswer()" class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-lg text-sm transition-colors shadow">
+                        <button onclick="checkPracticeAnswer()" class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 text-white font-bold rounded-lg text-sm transition-colors shadow">
                             Periksa Jawaban
                         </button>
-                        <button onclick="generatePracticeQuestion()" class="px-4 py-2.5 bg-stone-200 hover:bg-stone-300 text-stone-700 font-medium rounded-lg text-sm transition-colors">
+                        <button onclick="generatePracticeQuestion()" class="px-4 py-2.5 bg-stone-200 dark:bg-stone-700 hover:bg-stone-300 dark:hover:bg-stone-600 text-stone-700 dark:text-stone-200 font-medium rounded-lg text-sm transition-colors">
                             Soal Baru 🔄
                         </button>
                     </div>
@@ -378,7 +397,7 @@
                     <div id="practice-feedback" class="hidden p-4 rounded-lg text-sm font-medium text-left"></div>
 
                     <!-- Solution Hint Box -->
-                    <div id="practice-solution-box" class="hidden text-left bg-white p-4 rounded-lg border border-stone-200 text-xs font-mono space-y-1">
+                    <div id="practice-solution-box" class="hidden text-left bg-white dark:bg-stone-900 p-4 rounded-lg border border-stone-200 dark:border-stone-700 text-xs font-mono space-y-1">
                         <!-- Populated by JS -->
                     </div>
                 </div>
@@ -388,7 +407,7 @@
     </main>
 
     <!-- Footer -->
-    <footer class="bg-white border-t border-stone-200 py-6 mt-12 text-center text-xs text-stone-500">
+    <footer class="bg-white dark:bg-stone-900 border-t border-stone-200 dark:border-stone-800 py-6 mt-12 text-center text-xs text-stone-500 dark:text-stone-400 transition-colors">
         <div class="max-w-7xl mx-auto px-4">
             <p>Multi-Base Explorer: Media Belajar Interaktif Konversi Biner, Desimal, & Heksadesimal</p>
         </div>
@@ -419,6 +438,29 @@
         let currentPracticeTarget = { question: "", answer: "", hint: "" };
         let chartPowersObj = null;
         let chartCapacityObj = null;
+        let selectedMatrixIndex = 10; // Default index 10 ('A')
+
+        // Theme Switcher Logic
+        function toggleTheme() {
+            const htmlEl = document.documentElement;
+            const btnIcon = document.getElementById('theme-btn-icon');
+            const btnText = document.getElementById('theme-btn-text');
+
+            if (htmlEl.classList.contains('dark')) {
+                htmlEl.classList.remove('dark');
+                htmlEl.classList.add('light');
+                btnIcon.textContent = '🌙';
+                btnText.textContent = 'Mode Gelap';
+            } else {
+                htmlEl.classList.remove('light');
+                htmlEl.classList.add('dark');
+                btnIcon.textContent = '☀️';
+                btnText.textContent = 'Mode Terang';
+            }
+
+            renderMatrixButtons(); // Re-render matrix for dark styling
+            updateChartThemeColors();
+        }
 
         // Initialize Application
         document.addEventListener('DOMContentLoaded', () => {
@@ -542,14 +584,14 @@
                 steps.push({ char, charValue, position, powerVal, stepResult });
 
                 const tr = document.createElement('tr');
-                tr.className = i % 2 === 0 ? 'bg-white' : 'bg-stone-50/70';
+                tr.className = i % 2 === 0 ? 'bg-white dark:bg-stone-900' : 'bg-stone-50/70 dark:bg-stone-800/40';
                 tr.innerHTML = `
-                    <td class="p-3 text-stone-600">${position} ${position === 0 ? '<span class="text-[10px] bg-amber-100 text-amber-800 px-1 rounded">LSB/LSD</span>' : (i === 0 ? '<span class="text-[10px] bg-indigo-100 text-indigo-800 px-1 rounded">MSB/MSD</span>' : '')}</td>
-                    <td class="p-3 font-bold text-indigo-700">${char}</td>
-                    <td class="p-3 text-stone-800">${charValue}</td>
-                    <td class="p-3 text-stone-600">${radix}<sup>${position}</sup></td>
-                    <td class="p-3 text-stone-600">${powerVal.toLocaleString()}</td>
-                    <td class="p-3 text-right font-bold text-stone-900">${stepResult.toLocaleString()}</td>
+                    <td class="p-3 text-stone-600 dark:text-stone-400">${position} ${position === 0 ? '<span class="text-[10px] bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 px-1 rounded">LSB/LSD</span>' : (i === 0 ? '<span class="text-[10px] bg-indigo-100 dark:bg-indigo-950 text-indigo-800 dark:text-indigo-300 px-1 rounded">MSB/MSD</span>' : '')}</td>
+                    <td class="p-3 font-bold text-indigo-700 dark:text-indigo-400">${char}</td>
+                    <td class="p-3 text-stone-800 dark:text-stone-200">${charValue}</td>
+                    <td class="p-3 text-stone-600 dark:text-stone-400">${radix}<sup>${position}</sup></td>
+                    <td class="p-3 text-stone-600 dark:text-stone-400">${powerVal.toLocaleString()}</td>
+                    <td class="p-3 text-right font-bold text-stone-900 dark:text-stone-100">${stepResult.toLocaleString()}</td>
                 `;
                 tableBody.appendChild(tr);
             }
@@ -564,11 +606,11 @@
                 const barRow = document.createElement('div');
                 barRow.className = "flex items-center space-x-3 text-xs font-sans";
                 barRow.innerHTML = `
-                    <div class="w-28 font-mono font-bold text-stone-700">Digit '${s.char}' (${radix}<sup>${s.position}</sup>)</div>
-                    <div class="flex-grow bg-stone-100 rounded-full h-3 overflow-hidden border border-stone-200">
-                        <div class="bg-indigo-600 h-full rounded-full transition-all duration-500" style="width: ${percentage}%"></div>
+                    <div class="w-28 font-mono font-bold text-stone-700 dark:text-stone-300">Digit '${s.char}' (${radix}<sup>${s.position}</sup>)</div>
+                    <div class="flex-grow bg-stone-100 dark:bg-stone-800 rounded-full h-3 overflow-hidden border border-stone-200 dark:border-stone-700">
+                        <div class="bg-indigo-600 dark:bg-indigo-500 h-full rounded-full transition-all duration-500" style="width: ${percentage}%"></div>
                     </div>
-                    <div class="w-24 text-right font-mono font-semibold text-stone-800">${s.stepResult.toLocaleString()} (${percentage}%)</div>
+                    <div class="w-24 text-right font-mono font-semibold text-stone-800 dark:text-stone-200">${s.stepResult.toLocaleString()} (${percentage}%)</div>
                 `;
                 barsContainer.appendChild(barRow);
             });
@@ -577,19 +619,38 @@
         // Render 0-15 Matrix Buttons
         function renderMatrixButtons() {
             const container = document.getElementById('matrix-buttons');
+            const isDark = document.documentElement.classList.contains('dark');
             container.innerHTML = '';
 
-            matrixSymbols.forEach(s => {
+            matrixSymbols.forEach((s, idx) => {
                 const btn = document.createElement('button');
-                btn.className = `p-2 text-center font-mono font-bold rounded border text-xs sm:text-sm transition-all ${
-                    s.dec >= 10 ? 'bg-indigo-50 border-indigo-200 text-indigo-700 hover:bg-indigo-100' : 'bg-white border-stone-200 text-stone-800 hover:bg-stone-100'
-                }`;
+                let baseClasses = "p-2 text-center font-mono font-bold rounded border text-xs sm:text-sm transition-all ";
+                
+                if (s.dec >= 10) {
+                    baseClasses += isDark 
+                        ? "bg-indigo-950/80 border-indigo-800 text-indigo-300 hover:bg-indigo-900 " 
+                        : "bg-indigo-50 border-indigo-200 text-indigo-700 hover:bg-indigo-100 ";
+                } else {
+                    baseClasses += isDark 
+                        ? "bg-stone-900 border-stone-800 text-stone-200 hover:bg-stone-800 " 
+                        : "bg-white border-stone-200 text-stone-800 hover:bg-stone-100 ";
+                }
+
+                if (idx === selectedMatrixIndex) {
+                    baseClasses += isDark ? "ring-2 ring-indigo-400 border-indigo-400 " : "ring-2 ring-indigo-600 border-indigo-600 ";
+                }
+
+                btn.className = baseClasses;
                 btn.textContent = `${s.dec}`;
-                btn.onclick = () => inspectMatrixItem(s);
+                btn.onclick = () => {
+                    selectedMatrixIndex = idx;
+                    inspectMatrixItem(s);
+                    renderMatrixButtons();
+                };
                 container.appendChild(btn);
             });
 
-            inspectMatrixItem(matrixSymbols[10]); // Default inspect '10'
+            inspectMatrixItem(matrixSymbols[selectedMatrixIndex]);
         }
 
         function inspectMatrixItem(s) {
@@ -598,20 +659,65 @@
             document.getElementById('inspect-bin').textContent = s.bin;
 
             const bitBoxes = document.getElementById('bit-boxes');
+            const isDark = document.documentElement.classList.contains('dark');
             bitBoxes.innerHTML = '';
+            
             for (let i = 0; i < 4; i++) {
                 const bit = s.bin[i];
                 const box = document.createElement('div');
-                box.className = `w-8 h-8 rounded flex items-center justify-center border text-xs ${
-                    bit === '1' ? 'bg-emerald-600 text-white border-emerald-700 shadow-sm' : 'bg-stone-100 text-stone-400 border-stone-300'
-                }`;
+                let boxStyles = "w-8 h-8 rounded flex items-center justify-center border text-xs ";
+                
+                if (bit === '1') {
+                    boxStyles += isDark 
+                        ? "bg-emerald-600 text-white border-emerald-500 shadow-sm" 
+                        : "bg-emerald-600 text-white border-emerald-700 shadow-sm";
+                } else {
+                    boxStyles += isDark 
+                        ? "bg-stone-800 text-stone-500 border-stone-700" 
+                        : "bg-stone-100 text-stone-400 border-stone-300";
+                }
+
+                box.className = boxStyles;
                 box.textContent = bit;
                 bitBoxes.appendChild(box);
             }
         }
 
+        // Get Theme Color Scheme for Charts
+        function getChartColors() {
+            const isDark = document.documentElement.classList.contains('dark');
+            return {
+                textColor: isDark ? '#e7e5e4' : '#44403c',
+                gridColor: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
+            };
+        }
+
+        function updateChartThemeColors() {
+            if (!chartPowersObj || !chartCapacityObj) return;
+            const colors = getChartColors();
+
+            // Update Chart 1
+            chartPowersObj.options.scales.x.ticks.color = colors.textColor;
+            chartPowersObj.options.scales.x.grid.color = colors.gridColor;
+            chartPowersObj.options.scales.y.ticks.color = colors.textColor;
+            chartPowersObj.options.scales.y.grid.color = colors.gridColor;
+            chartPowersObj.options.scales.y.title.color = colors.textColor;
+            chartPowersObj.options.plugins.legend.labels.color = colors.textColor;
+            chartPowersObj.update();
+
+            // Update Chart 2
+            chartCapacityObj.options.scales.x.ticks.color = colors.textColor;
+            chartCapacityObj.options.scales.x.grid.color = colors.gridColor;
+            chartCapacityObj.options.scales.y.ticks.color = colors.textColor;
+            chartCapacityObj.options.scales.y.grid.color = colors.gridColor;
+            chartCapacityObj.options.scales.y.title.color = colors.textColor;
+            chartCapacityObj.update();
+        }
+
         // Initialize Chart.js
         function initCharts() {
+            const colors = getChartColors();
+
             // Chart 1: Exponential Growth Comparison
             const ctxPowers = document.getElementById('chartPowers').getContext('2d');
             chartPowersObj = new Chart(ctxPowers, {
@@ -622,22 +728,22 @@
                         {
                             label: 'Basis 2 (2ⁿ)',
                             data: [1, 2, 4, 8, 16],
-                            borderColor: '#059669',
-                            backgroundColor: '#059669',
+                            borderColor: '#10b981',
+                            backgroundColor: '#10b981',
                             tension: 0.2
                         },
                         {
                             label: 'Basis 10 (10ⁿ)',
                             data: [1, 10, 100, 1000, 10000],
-                            borderColor: '#d97706',
-                            backgroundColor: '#d97706',
+                            borderColor: '#f59e0b',
+                            backgroundColor: '#f59e0b',
                             tension: 0.2
                         },
                         {
                             label: 'Basis 16 (16ⁿ)',
                             data: [1, 16, 256, 4096, 65536],
-                            borderColor: '#4f46e5',
-                            backgroundColor: '#4f46e5',
+                            borderColor: '#6366f1',
+                            backgroundColor: '#6366f1',
                             tension: 0.2
                         }
                     ]
@@ -646,7 +752,10 @@
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
-                        legend: { position: 'bottom' },
+                        legend: { 
+                            position: 'bottom',
+                            labels: { color: colors.textColor }
+                        },
                         tooltip: {
                             callbacks: {
                                 label: function(ctx) {
@@ -656,9 +765,15 @@
                         }
                     },
                     scales: {
+                        x: {
+                            ticks: { color: colors.textColor },
+                            grid: { color: colors.gridColor }
+                        },
                         y: {
                             type: 'logarithmic',
-                            title: { display: true, text: 'Nilai Bobot (Skala Logaritmik)' }
+                            ticks: { color: colors.textColor },
+                            grid: { color: colors.gridColor },
+                            title: { display: true, text: 'Nilai Bobot (Skala Logaritmik)', color: colors.textColor }
                         }
                     }
                 }
@@ -691,10 +806,16 @@
                         }
                     },
                     scales: {
+                        x: {
+                            ticks: { color: colors.textColor },
+                            grid: { color: colors.gridColor }
+                        },
                         y: {
                             beginAtZero: true,
                             type: 'logarithmic',
-                            title: { display: true, text: 'Nilai Maksimum (Skala Logaritmik)' }
+                            ticks: { color: colors.textColor },
+                            grid: { color: colors.gridColor },
+                            title: { display: true, text: 'Nilai Maksimum (Skala Logaritmik)', color: colors.textColor }
                         }
                     }
                 }
@@ -765,26 +886,32 @@
             const solutionBox = document.getElementById('practice-solution-box');
 
             if (!userInput) {
-                feedback.className = "p-3 rounded-lg text-sm bg-amber-100 text-amber-800 border border-amber-200";
+                feedback.className = "p-3 rounded-lg text-sm bg-amber-100 dark:bg-amber-950/80 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800";
                 feedback.textContent = "Silakan masukkan jawaban Anda terlebih dahulu.";
                 return;
             }
 
             if (userInput === currentPracticeTarget.answer) {
-                feedback.className = "p-3 rounded-lg text-sm bg-emerald-100 text-emerald-800 border border-emerald-200 font-bold";
+                feedback.className = "p-3 rounded-lg text-sm bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 font-bold";
                 feedback.textContent = `🎉 Benar sekali! Jawaban ${userInput} tepat.`;
             } else {
-                feedback.className = "p-3 rounded-lg text-sm bg-rose-100 text-rose-800 border border-rose-200";
+                feedback.className = "p-3 rounded-lg text-sm bg-rose-100 dark:bg-rose-950/80 text-rose-800 dark:text-rose-300 border border-rose-200 dark:border-rose-800";
                 feedback.textContent = `❌ Belum tepat. Jawaban Anda (${userInput}) berbeda dari jawaban yang benar (${currentPracticeTarget.answer}).`;
             }
 
             solutionBox.innerHTML = `
-                <div class="font-bold text-stone-800 mb-1">Panduan & Kunci Jawaban:</div>
-                <div class="text-indigo-700 font-bold">Jawaban Benar: ${currentPracticeTarget.answer}</div>
-                <div class="text-stone-600 mt-1">${currentPracticeTarget.hint}</div>
+                <div class="font-bold text-stone-800 dark:text-stone-200 mb-1">Panduan & Kunci Jawaban:</div>
+                <div class="text-indigo-700 dark:text-indigo-400 font-bold">Jawaban Benar: ${currentPracticeTarget.answer}</div>
+                <div class="text-stone-600 dark:text-stone-400 mt-1">${currentPracticeTarget.hint}</div>
             `;
             solutionBox.classList.remove('hidden');
         }
     </script>
 </body>
 </html>
+```
+
+### Ringkasan Pembaruan:
+1. **Pengalih Tema Interaktif (Mode Gelap/Terang):** Tombol di bagian kanan atas header yang dapat diklik untuk berpindah antara `Mode Gelap` dan `Mode Terang`.
+2. **Stilasi Tailwind Dinamis:** Menggunakan skema warna Slate/Stone gelap (`dark:bg-stone-900`, `dark:bg-stone-950`, `dark:text-stone-100`) untuk kontras tinggi dan kenyamanan mata.
+3. **Sinkronisasi Grafik Chart.js:** Warna teks, sumbu, dan garis kisi pada grafik secara otomatis diperbarui ketika tema berubah.
