@@ -1,910 +1,791 @@
 <!DOCTYPE html>
-<html lang="id" class="light">
+<html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Multi-Base Explorer: Biner, Desimal, & Heksadesimal</title>
-    <!-- Tailwind CSS CDN -->
+    <title>Mata Kuliah Logika Informatika</title>
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
             darkMode: 'class',
-        }
-    </script>
-    <!-- Chart.js CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        .chart-container {
-            position: relative;
-            width: 100%;
-            max-width: 600px;
-            margin-left: auto;
-            margin-right: auto;
-            height: 300px;
-            max-height: 360px;
-        }
-        @media (min-width: 768px) {
-            .chart-container {
-                height: 340px;
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    }
+                }
             }
         }
-        .tab-btn.active {
-            border-bottom: 3px solid #6366f1;
-            color: #6366f1;
+    </script>
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@600;700&display=swap');
+        
+        body {
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        /* Nav Tabs */
+        .nav-tab {
+            transition: all 0.2s ease;
+            position: relative;
+        }
+        .nav-tab.active {
+            color: #0284c7; /* light: sky-600 */
             font-weight: 700;
         }
-        .dark .tab-btn.active {
-            border-bottom: 3px solid #818cf8;
-            color: #818cf8;
+        .dark .nav-tab.active {
+            color: #38bdf8; /* dark: sky-400 */
         }
+        .nav-tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: #0284c7;
+            border-radius: 2px;
+        }
+        .dark .nav-tab.active::after {
+            background: #38bdf8;
+        }
+
+        /* SVG Logic Gates - Standard Minimalist */
+        .gate-symbol {
+            fill: #ffffff;
+            stroke: #475569;
+            stroke-width: 3;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            transition: all 0.3s;
+        }
+        .dark .gate-symbol {
+            fill: #1e293b;
+            stroke: #94a3b8;
+        }
+        
+        .gate-inner-wire {
+            stroke: #475569;
+            stroke-width: 3;
+            transition: all 0.3s;
+        }
+        .dark .gate-inner-wire {
+            stroke: #94a3b8;
+        }
+
+        /* Standard Minimalist Wires */
+        .wire-on {
+            stroke: #0284c7; /* Blue for ON */
+            transition: stroke 0.2s;
+        }
+        .wire-off {
+            stroke: #cbd5e1; /* Gray for OFF */
+            transition: stroke 0.2s;
+        }
+        .dark .wire-on {
+            stroke: #38bdf8;
+        }
+        .dark .wire-off {
+            stroke: #475569;
+        }
+
+        /* Standard Minimalist LED */
+        .led-on {
+            fill: #0284c7;
+            stroke: #ffffff;
+            transition: fill 0.3s;
+        }
+        .led-off {
+            fill: #f1f5f9;
+            stroke: #cbd5e1;
+            transition: fill 0.3s;
+        }
+        .dark .led-on {
+            fill: #38bdf8;
+            stroke: #0f172a;
+        }
+        .dark .led-off {
+            fill: #1e293b;
+            stroke: #475569;
+        }
+
+        /* Custom Scrollbar for Truth Table */
+        .table-scroll::-webkit-scrollbar { width: 8px; }
+        .table-scroll::-webkit-scrollbar-track { background: transparent; border-radius: 4px; }
+        .table-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .dark .table-scroll::-webkit-scrollbar-thumb { background: #334155; }
     </style>
 </head>
-<!-- Chosen Palette: Warm Neutral & Indigo Tech (Supports Light & Dark Modes) -->
-<!-- Application Structure Plan:
-    1. Header & Navigation: Clean responsive header with basis badges, tab navigation, and interactive Theme Switcher (Light / Dark Mode).
-    2. Section 1 (Kalkulator Multi-Basis & Step-by-Step Breakdown): Converter supporting Binary (Basis 2), Decimal (Basis 10), and Hexadecimal (Basis 16) with immediate cross-conversion cards, positional weight decomposition table (2^n, 10^n, or 16^n), and percentage contribution bars.
-    3. Section 2 (Pusat Konsep & Matriks Pemetaan 0-15): Educational guides on digital number systems and interactive 0-15 symbol matrix with live 4-bit nibble visualizer.
-    4. Section 3 (Analisis Grafik & Perbandingan Basis): Interactive Chart.js graphs illustrating exponential growth (2^n vs 10^n vs 16^n) and system max value capacity limits with dynamic theme coloring.
-    5. Section 4 (Modul Latihan Mandiri Multi-Mode): Configurable quiz tool with 5 conversion types, instant verification, and step-by-step solution hints.
--->
-<!-- Visualization & Content Choices:
-    - Comparative Positional Growth -> Chart.js Logarithmic Line Chart -> Dynamic dark/light axis color adjustments -> Chart.js Canvas
-    - Bit & Digit Capacity Comparison -> Chart.js Logarithmic Bar Chart -> Dynamic dark/light grid color updates -> Chart.js Canvas
-    - Interactive 0-15 Symbol Matrix -> Theme-responsive Grid Buttons & Nibble Visualizer -> Live bit state toggling -> Pure Vanilla JS
-    - Multi-Base Step Breakdown -> Responsive HTML Table + Dynamic Contribution Bars -> Recalculates dynamically with dark mode styling -> Vanilla JS DOM
-    - CONFIRMATION: NO SVG graphics used. NO Mermaid JS used.
--->
-<!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
-<body class="bg-stone-50 dark:bg-stone-950 text-stone-800 dark:text-stone-100 font-sans antialiased min-h-screen flex flex-col transition-colors duration-200">
+<body class="font-sans antialiased pb-12 bg-slate-50 text-slate-800 dark:bg-slate-900 dark:text-slate-100 min-h-screen">
 
-    <!-- Header & Navigation Bar -->
-    <header class="bg-white dark:bg-stone-900 border-b border-stone-200 dark:border-stone-800 sticky top-0 z-30 shadow-sm transition-colors duration-200">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center h-16">
-                <div class="flex items-center space-x-3">
-                    <span class="text-2xl">🧮</span>
-                    <div>
-                        <h1 class="text-lg sm:text-xl font-bold text-stone-900 dark:text-white leading-tight">Multi-Base <span class="text-indigo-600 dark:text-indigo-400"> Explorer</span></h1>
-                        <p class="text-xs text-stone-500 dark:text-stone-400 hidden sm:block">Panduan Interaktif Konversi Biner, Desimal, & Heksadesimal</p>
-                    </div>
+    <header class="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 sticky top-0 z-50 transition-colors">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6">
+            <div class="flex flex-col md:flex-row justify-between items-center py-4 gap-4">
+                <div class="flex items-center gap-4">
+                    <h1 class="text-xl font-bold tracking-tight">
+                        Mata Kuliah <span class="text-sky-600 dark:text-sky-400">Logika Informatika</span>
+                    </h1>
                 </div>
-                
-                <div class="flex items-center space-x-2 sm:space-x-3">
-                    <div class="hidden sm:flex items-center space-x-2">
-                        <span class="text-[11px] font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/80 px-2.5 py-1 rounded-md border border-emerald-200 dark:border-emerald-800">Basis 2</span>
-                        <span class="text-[11px] font-semibold text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/80 px-2.5 py-1 rounded-md border border-amber-200 dark:border-amber-800">Basis 10</span>
-                        <span class="text-[11px] font-semibold text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-950/80 px-2.5 py-1 rounded-md border border-indigo-200 dark:border-indigo-800">Basis 16</span>
-                    </div>
-
-                    <!-- Theme Toggle Button -->
-                    <button onclick="toggleTheme()" id="theme-toggle-btn" class="px-3 py-1.5 rounded-lg bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 border border-stone-300 dark:border-stone-700 text-stone-700 dark:text-stone-200 text-xs font-semibold flex items-center space-x-1.5 transition-colors">
-                        <span id="theme-btn-icon">🌙</span>
-                        <span id="theme-btn-text" class="hidden xs:inline">Mode Gelap</span>
+                <div class="flex items-center gap-4">
+                    <nav class="flex space-x-2 bg-slate-100 dark:bg-slate-900 p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 transition-colors">
+                        <!-- Sistem Bilangan is active by default -->
+                        <button onclick="switchTab('bilangan')" id="tab-bilangan" class="nav-tab active px-4 py-1.5 rounded text-sm text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white">Sistem Bilangan</button>
+                        <button onclick="switchTab('gerbang')" id="tab-gerbang" class="nav-tab px-4 py-1.5 rounded text-sm text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white">Gerbang Logika</button>
+                    </nav>
+                    
+                    <!-- Theme Toggle -->
+                    <button onclick="toggleTheme()" class="p-2 rounded-lg bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:text-sky-500 transition-colors">
+                        <svg id="icon-sun" class="w-5 h-5 hidden dark:block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                        <svg id="icon-moon" class="w-5 h-5 block dark:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
                     </button>
                 </div>
             </div>
-
-            <!-- Navigation Tabs -->
-            <nav class="flex space-x-4 sm:space-x-8 overflow-x-auto text-xs sm:text-sm font-medium border-t border-stone-100 dark:border-stone-800 py-2">
-                <button onclick="switchTab('calculator')" id="tab-calculator" class="tab-btn active whitespace-nowrap pb-1 transition-colors text-stone-600 dark:text-stone-400">⚡ Kalkulator & Breakdown</button>
-                <button onclick="switchTab('concepts')" id="tab-concepts" class="tab-btn whitespace-nowrap pb-1 transition-colors text-stone-600 dark:text-stone-400">💡 Konsep & Matriks 0-15</button>
-                <button onclick="switchTab('analytics')" id="tab-analytics" class="tab-btn whitespace-nowrap pb-1 transition-colors text-stone-600 dark:text-stone-400">📈 Grafik Perbandingan</button>
-                <button onclick="switchTab('practice')" id="tab-practice" class="tab-btn whitespace-nowrap pb-1 transition-colors text-stone-600 dark:text-stone-400">🎯 Latihan Mandiri</button>
-            </nav>
         </div>
     </header>
 
-    <!-- Main Content Container -->
-    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-8">
+    <main class="max-w-6xl w-full mx-auto px-4 sm:px-6 mt-8">
 
-        <!-- SECTION 1: MULTI-BASE CALCULATOR & BREAKDOWN -->
-        <section id="sec-calculator" class="space-y-6">
-            <div class="bg-white dark:bg-stone-900 rounded-xl p-6 shadow-sm border border-stone-200 dark:border-stone-800 transition-colors">
-                <div class="border-b border-stone-100 dark:border-stone-800 pb-4 mb-6">
-                    <h2 class="text-xl font-bold text-stone-900 dark:text-white mb-1">Kalkulator Konversi Multi-Basis & Dekomposisi Posisi</h2>
-                    <p class="text-stone-600 dark:text-stone-400 text-sm">
-                        Pilih basis input (Biner, Desimal, atau Heksadesimal), masukkan nilai, dan perhatikan secara otomatis konversi simultan serta rincian bobot posisional (<i>R</i><sup><i>n</i></sup>).
-                    </p>
-                </div>
-
-                <!-- Input Controls Grid -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                    <div>
-                        <label for="source-radix" class="block text-xs font-semibold text-stone-600 dark:text-stone-400 uppercase mb-1">Pilih Basis Input</label>
-                        <select id="source-radix" onchange="onRadixChange()" class="w-full text-sm font-bold px-3 py-3 bg-stone-50 dark:bg-stone-800 border border-stone-300 dark:border-stone-700 text-stone-900 dark:text-stone-100 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-                            <option value="16">Heksadesimal (Basis 16: 0-9, A-F)</option>
-                            <option value="2">Biner (Basis 2: 0, 1)</option>
-                            <option value="10">Desimal (Basis 10: 0-9)</option>
-                        </select>
+        <!-- ==========================================
+             SECTION 1: SISTEM BILANGAN
+             ========================================== -->
+        <section id="sec-bilangan" class="space-y-6">
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Kalkulator Dekomposisi -->
+                <div class="bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm border-t-4 border-t-emerald-500 transition-colors">
+                    <h2 class="text-xl font-bold mb-4">Kalkulator Dekomposisi</h2>
+                    <div class="flex flex-col gap-4 mb-6">
+                        <div>
+                            <label class="block text-xs text-slate-500 dark:text-slate-400 mb-1">Pilih Basis Asal</label>
+                            <select id="calc-base" onchange="onBaseChange()" class="w-full p-3 rounded-lg font-bold text-sm bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 outline-none focus:border-emerald-500 transition-colors">
+                                <option value="2">Biner (Basis 2)</option>
+                                <option value="10">Desimal (Basis 10)</option>
+                                <option value="16" selected>Heksadesimal (Basis 16)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs text-slate-500 dark:text-slate-400 mb-1">Masukkan Nilai</label>
+                            <input type="text" id="calc-input" value="1A3" oninput="calculateConversion()" class="w-full p-3 rounded-lg font-mono text-xl font-bold uppercase tracking-widest bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 outline-none focus:border-emerald-500 transition-colors">
+                            <div id="calc-error" class="text-xs font-bold text-rose-500 mt-1 hidden">Format salah untuk sistem basis ini!</div>
+                        </div>
                     </div>
 
-                    <div class="md:col-span-2">
-                        <label for="multi-input" class="block text-xs font-semibold text-stone-600 dark:text-stone-400 uppercase mb-1">Input Nilai</label>
-                        <div class="flex space-x-2">
-                            <div class="relative flex-grow">
-                                <input type="text" id="multi-input" value="1F4A" maxlength="16" 
-                                    class="w-full text-xl font-mono uppercase font-bold tracking-wider px-4 py-2.5 bg-stone-50 dark:bg-stone-800 border border-stone-300 dark:border-stone-700 text-stone-900 dark:text-stone-100 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"
-                                    oninput="calculateMultiBase()">
-                                <span id="input-radix-badge" class="absolute right-3 top-3 text-xs font-bold text-stone-400 font-mono">16</span>
+                    <!-- Live Results -->
+                    <div class="grid grid-cols-3 gap-2 mb-6">
+                        <div class="bg-slate-50 dark:bg-slate-900 p-3 rounded-lg border border-slate-200 dark:border-slate-700 text-center transition-colors">
+                            <span class="block text-[10px] text-slate-500 dark:text-slate-400 uppercase mb-1">Biner</span>
+                            <span id="res-bin" class="font-mono text-sm font-bold text-sky-600 dark:text-sky-400 break-all">0</span>
+                        </div>
+                        <div class="bg-slate-50 dark:bg-slate-900 p-3 rounded-lg border border-slate-200 dark:border-slate-700 text-center transition-colors">
+                            <span class="block text-[10px] text-slate-500 dark:text-slate-400 uppercase mb-1">Desimal</span>
+                            <span id="res-dec" class="font-mono text-sm font-bold text-emerald-600 dark:text-emerald-400 break-all">0</span>
+                        </div>
+                        <div class="bg-slate-50 dark:bg-slate-900 p-3 rounded-lg border border-slate-200 dark:border-slate-700 text-center transition-colors">
+                            <span class="block text-[10px] text-slate-500 dark:text-slate-400 uppercase mb-1">Heksa</span>
+                            <span id="res-hex" class="font-mono text-sm font-bold text-amber-600 dark:text-amber-400 break-all">0</span>
+                        </div>
+                    </div>
+
+                    <!-- Breakdown Table -->
+                    <div class="bg-slate-50 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden transition-colors">
+                        <div class="p-3 bg-slate-100 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
+                            <h3 class="text-xs font-bold">Langkah Perhitungan</h3>
+                        </div>
+                        <div class="p-3">
+                            <div id="calc-formula" class="text-sm font-mono mb-4 break-words font-semibold"></div>
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-xs text-left border-collapse">
+                                    <thead class="text-slate-500 dark:text-slate-400 border-b border-slate-300 dark:border-slate-600">
+                                        <tr>
+                                            <th class="py-2 pr-2">Posisi (n)</th>
+                                            <th class="py-2 px-2">Digit</th>
+                                            <th class="py-2 px-2">Bobot (Basis<sup>n</sup>)</th>
+                                            <th class="py-2 pl-2 text-right">Hasil</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="calc-table" class="divide-y divide-slate-200 dark:divide-slate-700/50 font-mono">
+                                        <!-- JS Table Content -->
+                                    </tbody>
+                                </table>
                             </div>
-                            <button onclick="setRandomPreset()" class="px-4 py-2.5 bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 border border-stone-200 dark:border-stone-700 text-stone-700 dark:text-stone-300 font-medium rounded-lg text-xs transition-colors flex items-center justify-center space-x-1 whitespace-nowrap">
-                                <span>🎲 Contoh Acak</span>
-                            </button>
                         </div>
                     </div>
                 </div>
 
-                <!-- Cross-Base Results Display Cards -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                    <!-- Decimal Card -->
-                    <div class="bg-amber-900/90 dark:bg-amber-950 text-white p-4 rounded-xl shadow-sm border border-amber-800 dark:border-amber-900">
-                        <div class="text-xs text-amber-200 uppercase tracking-widest font-semibold flex justify-between">
-                            <span>Desimal (Basis 10)</span>
-                            <span class="font-mono">10</span>
+                <div class="space-y-6">
+                    <!-- Referensi Matriks -->
+                    <div class="bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm border-t-4 border-t-amber-500 transition-colors">
+                        <h2 class="text-lg font-bold mb-4">Matriks Referensi (0-15)</h2>
+                        <div class="grid grid-cols-4 gap-2" id="matrix-container">
+                            <!-- Populated by JS -->
                         </div>
-                        <div class="text-2xl lg:text-3xl font-extrabold tracking-tight mt-2 font-mono" id="res-dec">8010</div>
-                        <p class="text-[11px] text-amber-200 mt-1">Sistem sehari-hari (0-9)</p>
                     </div>
 
-                    <!-- Binary Card -->
-                    <div class="bg-emerald-900/90 dark:bg-emerald-950 text-white p-4 rounded-xl shadow-sm border border-emerald-800 dark:border-emerald-900">
-                        <div class="text-xs text-emerald-200 uppercase tracking-widest font-semibold flex justify-between">
-                            <span>Biner (Basis 2)</span>
-                            <span class="font-mono">2</span>
+                    <!-- Modul Latihan -->
+                    <div class="bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm border-t-4 border-t-sky-500 transition-colors">
+                        <h2 class="text-lg font-bold mb-2">Latihan Mandiri</h2>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 mb-4">Pilih arah konversi dan uji pemahaman Anda.</p>
+                        
+                        <div class="flex gap-2 mb-4">
+                            <select id="quiz-mode" class="flex-grow p-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-md text-sm outline-none transition-colors">
+                                <option value="b2d">Biner → Desimal</option>
+                                <option value="d2b">Desimal → Biner</option>
+                                <option value="h2d">Heksadesimal → Desimal</option>
+                                <option value="d2h">Desimal → Heksadesimal</option>
+                                <option value="b2h">Biner → Heksadesimal</option>
+                                <option value="h2b">Heksadesimal → Biner</option>
+                            </select>
+                            <button onclick="generateQuiz()" class="px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white text-sm font-bold rounded-md transition-colors">Soal Baru</button>
                         </div>
-                        <div class="text-lg lg:text-xl font-bold tracking-wider mt-2 font-mono break-all" id="res-bin">0001 1111 0100 1010</div>
-                        <p class="text-[11px] text-emerald-200 mt-1">Bahasa mesin/sirkuit digital (0,1)</p>
-                    </div>
 
-                    <!-- Hex Card -->
-                    <div class="bg-indigo-900 dark:bg-indigo-950 text-white p-4 rounded-xl shadow-sm border border-indigo-800 dark:border-indigo-900">
-                        <div class="text-xs text-indigo-200 uppercase tracking-widest font-semibold flex justify-between">
-                            <span>Heksadesimal (Basis 16)</span>
-                            <span class="font-mono">16</span>
+                        <div id="quiz-container" class="hidden bg-slate-50 dark:bg-slate-900 p-4 rounded-lg border border-slate-200 dark:border-slate-700 transition-colors">
+                            <div class="mb-4">
+                                <span class="block text-xs text-slate-500 dark:text-slate-400 mb-1">SOAL:</span>
+                                <span id="quiz-question" class="text-xl font-mono font-bold tracking-widest"></span>
+                            </div>
+                            <div class="flex gap-2">
+                                <input type="text" id="quiz-answer" placeholder="Ketik jawaban..." class="flex-grow p-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-md font-mono text-sm outline-none uppercase transition-colors">
+                                <button onclick="checkQuiz()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold rounded-md transition-colors">Cek</button>
+                            </div>
+                            <div id="quiz-feedback" class="mt-3 p-2 rounded text-sm font-bold text-center hidden"></div>
                         </div>
-                        <div class="text-2xl lg:text-3xl font-extrabold tracking-tight mt-2 font-mono" id="res-hex">1F4A</div>
-                        <p class="text-[11px] text-indigo-200 mt-1">Format ringkas kode memori/warna</p>
-                    </div>
-                </div>
-
-                <!-- Formula Mathematical Breakdown -->
-                <div class="bg-stone-100 dark:bg-stone-800/80 p-4 rounded-xl border border-stone-200 dark:border-stone-700 mb-6 font-mono text-xs text-stone-800 dark:text-stone-200">
-                    <span class="font-bold text-stone-500 dark:text-stone-400 uppercase block mb-1">Persamaan Konversi Ke Desimal:</span>
-                    <div id="calc-formula-text" class="text-sm font-semibold text-indigo-900 dark:text-indigo-300 break-all">1F4A<sub>16</sub> = (1×4096) + (15×256) + (4×16) + (10×1) = 8010<sub>10</sub></div>
-                </div>
-
-                <!-- Positional Step-by-Step Table -->
-                <div>
-                    <h3 class="text-md font-bold text-stone-800 dark:text-stone-200 mb-3" id="table-title">Rincian Bobot Posisional Input Basis 16</h3>
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left text-sm border-collapse">
-                            <thead>
-                                <tr class="bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-300 border-b border-stone-200 dark:border-stone-700 text-xs font-semibold">
-                                    <th class="p-3">Posisi (Kanan→Kiri)</th>
-                                    <th class="p-3">Digit Input</th>
-                                    <th class="p-3">Nilai Desimal Digit</th>
-                                    <th class="p-3">Bobot Pangkat (Basis<sup>n</sup>)</th>
-                                    <th class="p-3">Nilai Posisi</th>
-                                    <th class="p-3 text-right">Hasil Perkalian</th>
-                                </tr>
-                            </thead>
-                            <tbody id="calc-table-body" class="divide-y divide-stone-200 dark:divide-stone-800 font-mono">
-                                <!-- Populated by JS -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <!-- Visual Bar Breakdown of Contribution -->
-                <div class="mt-6 pt-4 border-t border-stone-200 dark:border-stone-800">
-                    <h3 class="text-md font-bold text-stone-800 dark:text-stone-200 mb-2">Proporsi Kontribusi Setiap Digit terhadap Total Desimal</h3>
-                    <p class="text-xs text-stone-500 dark:text-stone-400 mb-3">Makin ke kiri posisi digit (MSD/MSB), makin dominan nilainya terhadap total desimal.</p>
-                    <div id="calc-contribution-bars" class="space-y-2">
-                        <!-- Populated by JS -->
                     </div>
                 </div>
             </div>
+
         </section>
 
-        <!-- SECTION 2: CONCEPTS & 0-15 MATRIX -->
-        <section id="sec-concepts" class="space-y-6 hidden">
-            <div class="bg-white dark:bg-stone-900 rounded-xl p-6 shadow-sm border border-stone-200 dark:border-stone-800 transition-colors">
-                <h2 class="text-xl font-bold text-stone-900 dark:text-white mb-2">Pusat Konsep Sistem Bilangan & Matriks Pemetaan 0-15</h2>
-                <p class="text-stone-600 dark:text-stone-400 text-sm leading-relaxed mb-6">
-                    Sistem bilangan digital berakar dari konsep <strong>Radix (Basis)</strong>. Setiap basis menentukan berapa banyak simbol unik yang dipakai. Di bawah ini adalah pemetaan langsung angka 0 hingga 15 dalam Biner, Desimal, dan Heksadesimal beserta penjelasannya.
-                </p>
+        <!-- ==========================================
+             SECTION 2: GERBANG LOGIKA
+             ========================================== -->
+        <section id="sec-gerbang" class="space-y-6 hidden">
+            
+            <div class="mb-6">
+                <h2 class="text-2xl font-bold">Simulasi Sirkuit Logika</h2>
+                <p class="text-slate-500 dark:text-slate-400 text-sm mt-1">Sirkuit dengan standar IEEE. Klik pada tombol kotak masukan untuk merubah aliran logika.</p>
+            </div>
 
-                <!-- Interactive 0-15 Matrix Mapper -->
-                <div class="bg-stone-50 dark:bg-stone-800/50 p-5 rounded-xl border border-stone-200 dark:border-stone-800 mb-6">
-                    <h3 class="text-sm font-bold text-stone-800 dark:text-stone-200 uppercase tracking-wider mb-3">Matriks Interaktif Pemetaan Nilai 0-15 (Klik Angka)</h3>
-                    <div class="grid grid-cols-4 sm:grid-cols-8 md:grid-cols-16 gap-2" id="matrix-buttons">
+            <!-- Main Workspace Grid -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                
+                <!-- Left: Control Panel & Simulator -->
+                <div class="lg:col-span-2 space-y-4">
+                    
+                    <!-- Control Panel -->
+                    <div class="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-wrap items-center gap-4 transition-colors">
+                        <div class="flex flex-col">
+                            <label class="text-xs text-slate-500 dark:text-slate-400 mb-1">Mode Sirkuit</label>
+                            <select id="circuit-mode" onchange="changeCircuitMode()" class="px-3 py-2 rounded-md text-sm font-bold bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 outline-none focus:border-sky-500 transition-colors">
+                                <option value="1">1 Gerbang (2 Input)</option>
+                                <option value="2">2 Gerbang Kombinasi (3 Input)</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Dynamic Gate Selectors -->
+                        <div id="gate-controls" class="flex gap-3 flex-wrap items-end border-l border-slate-200 dark:border-slate-700 pl-4">
+                            <!-- Populated by JS -->
+                        </div>
+                    </div>
+
+                    <!-- Simulator Canvas -->
+                    <div class="bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col items-center justify-center relative overflow-hidden transition-colors min-h-[350px]">
+                        <!-- Circuit Drawing Area -->
+                        <div id="circuit-container" class="relative w-full max-w-[700px] h-[300px] flex items-center justify-center bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-slate-100 dark:border-slate-800 transition-colors">
+                            <!-- SVGs and Buttons injected here via JS -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right: Truth Table & Explanation -->
+                <div class="bg-white dark:bg-slate-800 p-5 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col h-full border-t-4 border-t-sky-500 transition-colors">
+                    <h3 class="text-lg font-bold mb-1">Tabel Kebenaran</h3>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mb-3">Baris yang disorot menunjukkan status sirkuit Anda saat ini.</p>
+                    
+                    <!-- Kotak Rumus Cara Menghitung -->
+                    <div id="tt-explain" class="text-xs mb-4 p-3 bg-slate-50 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700 font-mono leading-relaxed transition-colors">
                         <!-- Populated by JS -->
                     </div>
                     
-                    <!-- Selected Symbol Inspector -->
-                    <div id="matrix-inspector" class="mt-4 p-5 bg-white dark:bg-stone-900 rounded-lg border border-indigo-200 dark:border-indigo-900 flex flex-col md:flex-row items-center justify-between gap-6 shadow-sm">
-                        <div class="flex items-center space-x-6">
-                            <div class="text-center">
-                                <span class="text-xs text-stone-400 dark:text-stone-500 block font-semibold uppercase">Desimal</span>
-                                <span id="inspect-dec" class="text-3xl font-extrabold font-mono text-amber-600 dark:text-amber-400">10</span>
-                            </div>
-                            <div class="text-center">
-                                <span class="text-xs text-stone-400 dark:text-stone-500 block font-semibold uppercase">Hex</span>
-                                <span id="inspect-hex" class="text-3xl font-extrabold font-mono text-indigo-600 dark:text-indigo-400">A</span>
-                            </div>
-                            <div class="text-center">
-                                <span class="text-xs text-stone-400 dark:text-stone-500 block font-semibold uppercase">Biner (4-bit)</span>
-                                <span id="inspect-bin" class="text-2xl font-bold font-mono text-emerald-600 dark:text-emerald-400">1010</span>
-                            </div>
-                        </div>
-
-                        <!-- Bit Box Visualizer -->
-                        <div class="bg-stone-50 dark:bg-stone-800 p-3 rounded-lg border border-stone-200 dark:border-stone-700 flex flex-col items-center">
-                            <span class="text-[11px] font-bold text-stone-500 dark:text-stone-400 uppercase mb-2">Visualisasi 4 Bit (1 Nibble)</span>
-                            <div class="flex space-x-2 font-mono font-bold text-sm" id="bit-boxes">
-                                <!-- Populated by JS -->
-                            </div>
-                            <div class="flex justify-between w-full text-[10px] text-stone-400 dark:text-stone-500 mt-1 font-mono">
-                                <span>8 (2³)</span>
-                                <span>4 (2²)</span>
-                                <span>2 (2¹)</span>
-                                <span>1 (2⁰)</span>
-                            </div>
+                    <div class="flex-grow overflow-hidden relative">
+                        <div class="absolute inset-0 overflow-y-auto table-scroll pr-2">
+                            <table class="w-full text-center border-collapse">
+                                <thead id="tt-head" class="sticky top-0 bg-white dark:bg-slate-800 z-10 border-b border-slate-300 dark:border-slate-600 transition-colors">
+                                    <!-- Populated by JS -->
+                                </thead>
+                                <tbody id="tt-body" class="font-mono text-sm">
+                                    <!-- Populated by JS -->
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
 
-                <!-- Core Concept Cards Grid -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div class="p-5 bg-white dark:bg-stone-800/40 border border-stone-200 dark:border-stone-800 rounded-xl hover:border-emerald-300 dark:hover:border-emerald-700 transition-colors">
-                        <div class="flex items-center space-x-2 text-emerald-700 dark:text-emerald-400 font-bold mb-2">
-                            <span>0️⃣1️⃣</span>
-                            <h3>Sistem Biner (Basis 2)</h3>
-                        </div>
-                        <p class="text-xs text-stone-600 dark:text-stone-400 leading-relaxed">
-                            Hanya menggunakan simbol 0 dan 1. Setiap posisi merepresentasikan perpangkatan 2 (2<sup>0</sup>=1, 2<sup>1</sup>=2, 2<sup>2</sup>=4, 2<sup>3</sup>=8, 2<sup>4</sup>=16). Digunakan oleh prosesor komputer untuk merepresentasikan sinyal tegangan (Off/On).
-                        </p>
+            </div>
+            
+            <!-- Reference Cards (Kamus Gerbang Logika Lengkap) -->
+            <div class="bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm mt-8 transition-colors">
+                <h3 class="text-lg font-bold mb-4">Kamus Gerbang Dasar (Lengkap)</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="bg-slate-50 dark:bg-slate-900 p-4 rounded-lg border border-slate-200 dark:border-slate-700 transition-colors">
+                        <div class="font-bold text-sky-600 dark:text-sky-400 mb-1 flex justify-between"><span>AND</span> <span>A • B</span></div>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">Output 1 HANYA JIKA semua input bernilai 1.</p>
                     </div>
-
-                    <div class="p-5 bg-white dark:bg-stone-800/40 border border-stone-200 dark:border-stone-800 rounded-xl hover:border-amber-300 dark:hover:border-amber-700 transition-colors">
-                        <div class="flex items-center space-x-2 text-amber-700 dark:text-amber-400 font-bold mb-2">
-                            <span>🔢</span>
-                            <h3>Sistem Desimal (Basis 10)</h3>
-                        </div>
-                        <p class="text-xs text-stone-600 dark:text-stone-400 leading-relaxed">
-                            Menggunakan 10 simbol (0 hingga 9). Setiap posisi berpangkat 10 (10<sup>0</sup>=1, 10<sup>1</sup>=10, 10<sup>2</sup>=100). Sistem standar manusia karena jumlah 10 jari tangan.
-                        </p>
+                    <div class="bg-slate-50 dark:bg-slate-900 p-4 rounded-lg border border-slate-200 dark:border-slate-700 transition-colors">
+                        <div class="font-bold text-emerald-600 dark:text-emerald-400 mb-1 flex justify-between"><span>OR</span> <span>A + B</span></div>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">Output 1 JIKA ada minimal satu input bernilai 1.</p>
                     </div>
-
-                    <div class="p-5 bg-white dark:bg-stone-800/40 border border-stone-200 dark:border-stone-800 rounded-xl hover:border-indigo-300 dark:hover:border-indigo-700 transition-colors">
-                        <div class="flex items-center space-x-2 text-indigo-700 dark:text-indigo-400 font-bold mb-2">
-                            <span>🔠</span>
-                            <h3>Sistem Heksadesimal (Basis 16)</h3>
-                        </div>
-                        <p class="text-xs text-stone-600 dark:text-stone-400 leading-relaxed">
-                            Menggunakan 16 simbol: 0-9 dan A-F (A=10, B=11, C=12, D=13, E=14, F=15). Sangat efisien karena 1 digit hex mewakili persis 4 bit biner (1 nibble).
-                        </p>
+                    <div class="bg-slate-50 dark:bg-slate-900 p-4 rounded-lg border border-slate-200 dark:border-slate-700 transition-colors">
+                        <div class="font-bold text-rose-600 dark:text-rose-400 mb-1 flex justify-between"><span>NOT</span> <span>!A</span></div>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">Pembalik (Inverter). Input 1 jadi 0, input 0 jadi 1.</p>
                     </div>
-
-                    <div class="p-5 bg-white dark:bg-stone-800/40 border border-stone-200 dark:border-stone-800 rounded-xl hover:border-stone-400 dark:hover:border-stone-600 transition-colors">
-                        <div class="flex items-center space-x-2 text-stone-800 dark:text-stone-200 font-bold mb-2">
-                            <span>💡</span>
-                            <h3>Istilah: Bit, Nibble, & Byte</h3>
-                        </div>
-                        <p class="text-xs text-stone-600 dark:text-stone-400 leading-relaxed">
-                            • <strong>1 Bit:</strong> 1 digit biner (0 atau 1).<br>
-                            • <strong>1 Nibble:</strong> Kumpulan 4 bit (setara 1 digit hex).<br>
-                            • <strong>1 Byte:</strong> Kumpulan 8 bit (setara 2 digit hex, max 255).
-                        </p>
+                    <div class="bg-slate-50 dark:bg-slate-900 p-4 rounded-lg border border-slate-200 dark:border-slate-700 transition-colors">
+                        <div class="font-bold text-indigo-600 dark:text-indigo-400 mb-1 flex justify-between"><span>NAND</span> <span>!(A • B)</span></div>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">NOT AND. Output 0 HANYA JIKA semua input 1.</p>
                     </div>
-
-                    <div class="p-5 bg-white dark:bg-stone-800/40 border border-stone-200 dark:border-stone-800 rounded-xl hover:border-stone-400 dark:hover:border-stone-600 transition-colors">
-                        <div class="flex items-center space-x-2 text-stone-800 dark:text-stone-200 font-bold mb-2">
-                            <span>⬅️➡️</span>
-                            <h3>MSD/MSB vs LSD/LSB</h3>
-                        </div>
-                        <p class="text-xs text-stone-600 dark:text-stone-400 leading-relaxed">
-                            • <strong>MSB / MSD (Most Significant):</strong> Digit paling kiri dengan bobot terbesar.<br>
-                            • <strong>LSB / LSD (Least Significant):</strong> Digit paling kanan dengan bobot terkecil (<i>R</i><sup>0</sup> = 1).
-                        </p>
+                    <div class="bg-slate-50 dark:bg-slate-900 p-4 rounded-lg border border-slate-200 dark:border-slate-700 transition-colors">
+                        <div class="font-bold text-violet-600 dark:text-violet-400 mb-1 flex justify-between"><span>NOR</span> <span>!(A + B)</span></div>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">NOT OR. Output 1 HANYA JIKA semua input 0.</p>
                     </div>
-
-                    <div class="p-5 bg-white dark:bg-stone-800/40 border border-stone-200 dark:border-stone-800 rounded-xl hover:border-stone-400 dark:hover:border-stone-600 transition-colors">
-                        <div class="flex items-center space-x-2 text-stone-800 dark:text-stone-200 font-bold mb-2">
-                            <span>🔄</span>
-                            <h3>Hubungan Biner & Heksadesimal</h3>
-                        </div>
-                        <p class="text-xs text-stone-600 dark:text-stone-400 leading-relaxed">
-                            Konversi biner ke heksadesimal sangat mudah: cukup bagi digit biner menjadi kelompok-kelompok 4 bit dari kanan, lalu ubah setiap kelompok 4-bit secara langsung ke karakter hexnya.
-                        </p>
+                    <div class="bg-slate-50 dark:bg-slate-900 p-4 rounded-lg border border-slate-200 dark:border-slate-700 transition-colors">
+                        <div class="font-bold text-amber-600 dark:text-amber-400 mb-1 flex justify-between"><span>XOR</span> <span>A ⊕ B</span></div>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">Exclusive OR. Output 1 HANYA JIKA kedua input BERBEDA.</p>
+                    </div>
+                    <div class="bg-slate-50 dark:bg-slate-900 p-4 rounded-lg border border-slate-200 dark:border-slate-700 transition-colors">
+                        <div class="font-bold text-teal-600 dark:text-teal-400 mb-1 flex justify-between"><span>XNOR</span> <span>A ⊙ B</span></div>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">Exclusive NOR. Output 1 HANYA JIKA kedua input SAMA.</p>
                     </div>
                 </div>
             </div>
-        </section>
 
-        <!-- SECTION 3: ANALYTICS & COMPARATIVE CHARTS -->
-        <section id="sec-analytics" class="space-y-6 hidden">
-            <div class="bg-white dark:bg-stone-900 rounded-xl p-6 shadow-sm border border-stone-200 dark:border-stone-800 transition-colors">
-                <h2 class="text-xl font-bold text-stone-900 dark:text-white mb-2">Analisis Grafik & Perbandingan Efisiensi Basis</h2>
-                <p class="text-stone-600 dark:text-stone-400 text-sm leading-relaxed mb-6">
-                    Grafik di bawah ini menggambarkan pertumbuhan eksponensial bobot posisi pada Basis 2, Basis 10, dan Basis 16, serta membandingkan kapasitas maksimum nilai yang dapat ditampung oleh digit/bit masing-masing basis.
-                </p>
-
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <!-- Chart 1 Container -->
-                    <div class="bg-stone-50 dark:bg-stone-800/50 p-4 rounded-xl border border-stone-200 dark:border-stone-800">
-                        <h3 class="text-sm font-bold text-stone-800 dark:text-stone-200 mb-1">Perbandingan Pertumbuhan Bobot Posisi (Skala Logaritmik)</h3>
-                        <p class="text-xs text-stone-500 dark:text-stone-400 mb-4">Membandingkan skala bobot posisi 0 hingga posisi 4 pada 2<sup>n</sup>, 10<sup>n</sup>, dan 16<sup>n</sup>.</p>
-                        <div class="chart-container">
-                            <canvas id="chartPowers"></canvas>
-                        </div>
-                    </div>
-
-                    <!-- Chart 2 Container -->
-                    <div class="bg-stone-50 dark:bg-stone-800/50 p-4 rounded-xl border border-stone-200 dark:border-stone-800">
-                        <h3 class="text-sm font-bold text-stone-800 dark:text-stone-200 mb-1">Kapasitas Nilai Maksimum Sistem</h3>
-                        <p class="text-xs text-stone-500 dark:text-stone-400 mb-4">Membandingkan kapasitas maksimum desimal untuk 4-bit, 8-bit, 2-digit Hex, dan 3-digit Desimal.</p>
-                        <div class="chart-container">
-                            <canvas id="chartCapacity"></canvas>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- SECTION 4: MULTI-MODE PRACTICE -->
-        <section id="sec-practice" class="space-y-6 hidden">
-            <div class="bg-white dark:bg-stone-900 rounded-xl p-6 shadow-sm border border-stone-200 dark:border-stone-800 transition-colors">
-                <h2 class="text-xl font-bold text-stone-900 dark:text-white mb-2">Modul Latihan Mandiri Multi-Mode</h2>
-                <p class="text-stone-600 dark:text-stone-400 text-sm leading-relaxed mb-6">
-                    Pilih jenis konversi yang ingin Anda latih! Sistem akan menghasilkan soal acak sesuai konfigurasi yang Anda pilih.
-                </p>
-
-                <div class="max-w-xl mx-auto bg-stone-50 dark:bg-stone-800/50 p-6 rounded-xl border border-stone-200 dark:border-stone-800 text-center space-y-4">
-                    <!-- Quiz Type Selector -->
-                    <div>
-                        <label for="practice-type" class="block text-xs font-semibold text-stone-600 dark:text-stone-400 uppercase mb-1">Mode Latihan</label>
-                        <select id="practice-type" onchange="generatePracticeQuestion()" class="w-full text-sm font-bold px-3 py-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 text-stone-900 dark:text-stone-100 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-                            <option value="bin2dec">Biner ➔ Desimal</option>
-                            <option value="dec2bin">Desimal ➔ Biner</option>
-                            <option value="hex2dec" selected>Heksadesimal ➔ Desimal</option>
-                            <option value="dec2hex">Desimal ➔ Heksadesimal</option>
-                            <option value="bin2hex">Biner ➔ Heksadesimal</option>
-                        </select>
-                    </div>
-
-                    <div class="text-xs font-semibold text-stone-500 dark:text-stone-400 uppercase tracking-widest pt-2">Soal Anda:</div>
-                    <div id="practice-question-display" class="text-3xl sm:text-4xl font-extrabold font-mono text-indigo-700 dark:text-indigo-400 tracking-widest bg-white dark:bg-stone-900 py-4 px-6 rounded-lg border border-stone-200 dark:border-stone-700 shadow-inner inline-block break-all">
-                        3C8₁₆ = ...₁₀
-                    </div>
-
-                    <div class="pt-2">
-                        <label for="practice-user-input" class="block text-xs font-semibold text-stone-600 dark:text-stone-400 mb-1">Masukkan Hasil Konversi Anda:</label>
-                        <input type="text" id="practice-user-input" placeholder="Jawaban..." 
-                            class="w-full text-center text-lg font-mono font-bold py-2 px-3 bg-white dark:bg-stone-900 text-stone-900 dark:text-stone-100 border border-stone-300 dark:border-stone-700 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none max-w-xs mx-auto uppercase">
-                    </div>
-
-                    <div class="flex justify-center space-x-3 pt-2">
-                        <button onclick="checkPracticeAnswer()" class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 text-white font-bold rounded-lg text-sm transition-colors shadow">
-                            Periksa Jawaban
-                        </button>
-                        <button onclick="generatePracticeQuestion()" class="px-4 py-2.5 bg-stone-200 dark:bg-stone-700 hover:bg-stone-300 dark:hover:bg-stone-600 text-stone-700 dark:text-stone-200 font-medium rounded-lg text-sm transition-colors">
-                            Soal Baru 🔄
-                        </button>
-                    </div>
-
-                    <!-- Feedback Alert -->
-                    <div id="practice-feedback" class="hidden p-4 rounded-lg text-sm font-medium text-left"></div>
-
-                    <!-- Solution Hint Box -->
-                    <div id="practice-solution-box" class="hidden text-left bg-white dark:bg-stone-900 p-4 rounded-lg border border-stone-200 dark:border-stone-700 text-xs font-mono space-y-1">
-                        <!-- Populated by JS -->
-                    </div>
-                </div>
-            </div>
         </section>
 
     </main>
 
-    <!-- Footer -->
-    <footer class="bg-white dark:bg-stone-900 border-t border-stone-200 dark:border-stone-800 py-6 mt-12 text-center text-xs text-stone-500 dark:text-stone-400 transition-colors">
-        <div class="max-w-7xl mx-auto px-4">
-            <p>Multi-Base Explorer: Media Belajar Interaktif Konversi Biner, Desimal, & Heksadesimal</p>
-        </div>
-    </footer>
-
-    <!-- JavaScript Logic -->
     <script>
-        // Symbol Map 0-15
+        // --- STREAMING_CHUNK:Initializing application logic & interactivity... ---
+        
+        // --- THEME TOGGLE (Default Light Mode on Startup) ---
+        function toggleTheme() {
+            document.documentElement.classList.toggle('dark');
+        }
+
+        // --- NAVIGATION ---
+        function switchTab(tabId) {
+            document.getElementById('tab-bilangan').classList.remove('active');
+            document.getElementById('tab-gerbang').classList.remove('active');
+            document.getElementById('sec-bilangan').classList.add('hidden');
+            document.getElementById('sec-gerbang').classList.add('hidden');
+
+            document.getElementById(`tab-${tabId}`).classList.add('active');
+            document.getElementById(`sec-${tabId}`).classList.remove('hidden');
+        }
+
+        // Standard IEEE/ANSI SVG Paths (Scale: 100x100)
+        const GATE_SVGS = {
+            'AND': `<path class="gate-symbol" d="M 20 15 L 50 15 A 35 35 0 0 1 50 85 L 20 85 Z" /><line x1="0" y1="30" x2="20" y2="30" class="gate-inner-wire" /><line x1="0" y1="70" x2="20" y2="70" class="gate-inner-wire" /><line x1="85" y1="50" x2="100" y2="50" class="gate-inner-wire" />`,
+            'OR': `<path class="gate-symbol" d="M 10 15 Q 40 15 60 50 Q 40 85 10 85 Q 25 50 10 15 Z" /><line x1="0" y1="30" x2="18" y2="30" class="gate-inner-wire" /><line x1="0" y1="70" x2="18" y2="70" class="gate-inner-wire" /><line x1="60" y1="50" x2="100" y2="50" class="gate-inner-wire" />`,
+            'NOT': `<polygon class="gate-symbol" points="20,25 20,75 70,50" /><circle cx="78" cy="50" r="8" class="gate-symbol" /><line x1="0" y1="50" x2="20" y2="50" class="gate-inner-wire" /><line x1="86" y1="50" x2="100" y2="50" class="gate-inner-wire" />`,
+            'NAND': `<path class="gate-symbol" d="M 20 15 L 50 15 A 35 35 0 0 1 50 85 L 20 85 Z" /><circle cx="93" cy="50" r="8" class="gate-symbol" /><line x1="0" y1="30" x2="20" y2="30" class="gate-inner-wire" /><line x1="0" y1="70" x2="20" y2="70" class="gate-inner-wire" /><line x1="100" y1="50" x2="100" y2="50" class="gate-inner-wire" />`,
+            'NOR': `<path class="gate-symbol" d="M 10 15 Q 40 15 60 50 Q 40 85 10 85 Q 25 50 10 15 Z" /><circle cx="68" cy="50" r="8" class="gate-symbol" /><line x1="0" y1="30" x2="18" y2="30" class="gate-inner-wire" /><line x1="0" y1="70" x2="18" y2="70" class="gate-inner-wire" /><line x1="76" y1="50" x2="100" y2="50" class="gate-inner-wire" />`,
+            'XOR': `<path class="gate-symbol" d="M 20 15 Q 50 15 70 50 Q 50 85 20 85 Q 35 50 20 15 Z" /><path class="gate-symbol" fill="none" d="M 10 15 Q 25 50 10 85" /><line x1="0" y1="30" x2="18" y2="30" class="gate-inner-wire" /><line x1="0" y1="70" x2="18" y2="70" class="gate-inner-wire" /><line x1="70" y1="50" x2="100" y2="50" class="gate-inner-wire" />`,
+            'XNOR': `<path class="gate-symbol" d="M 20 15 Q 50 15 70 50 Q 50 85 20 85 Q 35 50 20 15 Z" /><path class="gate-symbol" fill="none" d="M 10 15 Q 25 50 10 85" /><circle cx="78" cy="50" r="8" class="gate-symbol" /><line x1="0" y1="30" x2="18" y2="30" class="gate-inner-wire" /><line x1="0" y1="70" x2="18" y2="70" class="gate-inner-wire" /><line x1="86" y1="50" x2="100" y2="50" class="gate-inner-wire" />`
+        };
+
+        const GATE_LOGIC = {
+            'AND': { fn: (a,b) => a && b, exp: '•' },
+            'OR': { fn: (a,b) => a || b, exp: '+' },
+            'NOT': { fn: (a,b) => !a, exp: '!' },
+            'NAND': { fn: (a,b) => !(a && b), exp: 'NAND' },
+            'NOR': { fn: (a,b) => !(a || b), exp: 'NOR' },
+            'XOR': { fn: (a,b) => a !== b, exp: '⊕' },
+            'XNOR': { fn: (a,b) => a === b, exp: 'XNOR' }
+        };
+
+        let circuitState = {
+            mode: 1, 
+            inputs: { A: 0, B: 0, C: 0 },
+            gates: { G1: 'AND', G2: 'OR' }
+        };
+
+        function initGateControls() {
+            const ctrl = document.getElementById('gate-controls');
+            ctrl.innerHTML = '';
+            
+            const createSelect = (id, label) => {
+                const div = document.createElement('div');
+                div.className = "flex flex-col";
+                div.innerHTML = `
+                    <label class="text-xs text-slate-500 dark:text-slate-400 mb-1">Gerbang ${label}</label>
+                    <select id="sel-${id}" onchange="updateGateSelection('${id}')" class="px-3 py-2 rounded-md text-sm font-bold bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 outline-none focus:border-sky-500 transition-colors">
+                        <option value="AND">AND</option>
+                        <option value="OR">OR</option>
+                        <option value="NOT">NOT</option>
+                        <option value="NAND">NAND</option>
+                        <option value="NOR">NOR</option>
+                        <option value="XOR">XOR</option>
+                        <option value="XNOR">XNOR</option>
+                    </select>
+                `;
+                return div;
+            };
+
+            if(circuitState.mode >= 1) {
+                ctrl.appendChild(createSelect('G1', '1'));
+                document.getElementById('sel-G1').value = circuitState.gates.G1;
+            }
+            if(circuitState.mode >= 2) {
+                ctrl.appendChild(createSelect('G2', '2'));
+                document.getElementById('sel-G2').value = circuitState.gates.G2;
+            }
+        }
+
+        function updateGateSelection(gid) {
+            circuitState.gates[gid] = document.getElementById(`sel-${gid}`).value;
+            renderCircuit();
+        }
+
+        function toggleLogicInput(pin) {
+            circuitState.inputs[pin] = circuitState.inputs[pin] === 1 ? 0 : 1;
+            renderCircuit();
+        }
+
+        function changeCircuitMode() {
+            circuitState.mode = parseInt(document.getElementById('circuit-mode').value);
+            circuitState.gates = circuitState.mode === 1 ? { G1: 'AND' } : { G1: 'AND', G2: 'OR' };
+            initGateControls();
+            renderCircuit();
+        }
+
+        function renderCircuit() {
+            const container = document.getElementById('circuit-container');
+            const { mode, inputs, gates } = circuitState;
+            
+            let html = '';
+            let isG1Not = gates.G1 === 'NOT';
+            let isG2Not = gates.G2 === 'NOT';
+
+            const btnW = 32, btnH = 32;
+            const btnClass = (val) => `absolute w-8 h-8 rounded font-mono text-sm font-bold flex items-center justify-center transition-colors border-2 z-25 shadow-sm outline-none cursor-pointer
+                    ${val ? 'bg-sky-500 text-white border-sky-400' : 'bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-600'} hover:brightness-110`;
+            
+            const btn = (id, xPos, yPos) => `
+                <button onclick="toggleLogicInput('${id}')" class="${btnClass(inputs[id])}" style="left: ${xPos}px; top: ${yPos}px;">
+                    ${inputs[id]}
+                    <span class="absolute -left-6 text-xs text-slate-500 dark:text-slate-400 font-bold">${id}</span>
+                </button>
+            `;
+
+            const getWireClass = (val) => val ? 'wire-on' : 'wire-off';
+            const getLedClass = (val) => val ? 'led-on' : 'led-off';
+            let y = 0, w1 = 0;
+
+            if (mode === 1) {
+                y = GATE_LOGIC[gates.G1].fn(inputs.A === 1, inputs.B === 1) ? 1 : 0;
+                
+                let g1X = 300, g1Y = 100;
+                let btnX = 80;
+                
+                let wireAy = isG1Not ? g1Y + 50 : g1Y + 30;
+                let wireBy = g1Y + 70;
+                let outY = g1Y + 50;
+
+                html = `<svg width="700" height="300" viewBox="0 0 700 300" class="absolute inset-0 z-0">`;
+                
+                html += `<path d="M ${btnX + btnW} ${wireAy} L ${g1X} ${wireAy}" class="${getWireClass(inputs.A)}" stroke-width="4" fill="none" />`;
+                
+                if (!isG1Not) {
+                    html += `<path d="M ${btnX + btnW} ${wireBy} L ${g1X} ${wireBy}" class="${getWireClass(inputs.B)}" stroke-width="4" fill="none" />`;
+                }
+
+                html += `
+                        <path d="M ${g1X + 100} ${outY} L 550 ${outY}" class="${getWireClass(y)}" stroke-width="4" fill="none" />
+                        <g transform="translate(${g1X}, ${g1Y})">${GATE_SVGS[gates.G1]}</g>
+                        <circle cx="550" cy="${outY}" r="24" class="${getLedClass(y)}" stroke-width="4" />
+                        <text x="590" y="${outY + 7}" class="fill-slate-800 dark:fill-white font-mono font-bold" font-size="20">Y=${y}</text>
+                    </svg>
+                `;
+
+                html += btn('A', btnX, wireAy - (btnH / 2));
+                if (!isG1Not) html += btn('B', btnX, wireBy - (btnH / 2));
+                
+            } 
+            else if (mode === 2) {
+                w1 = GATE_LOGIC[gates.G1].fn(inputs.A === 1, inputs.B === 1) ? 1 : 0;
+                y = GATE_LOGIC[gates.G2].fn(w1 === 1, inputs.C === 1) ? 1 : 0;
+                
+                let g1X = 200, g1Y = 50;
+                let g2X = 420, g2Y = 125;
+                let btnX = 80;
+
+                let wireAy = isG1Not ? g1Y + 50 : g1Y + 30;
+                let wireBy = g1Y + 70;
+                let g1OutY = g1Y + 50;
+
+                let wireCy = g2Y + 70;
+                let g2In1Y = isG2Not ? g2Y + 50 : g2Y + 30;
+                let outY = g2Y + 50;
+
+                html = `<svg width="700" height="300" viewBox="0 0 700 300" class="absolute inset-0 z-0">`;
+                
+                html += `<path d="M ${btnX + btnW} ${wireAy} L ${g1X} ${wireAy}" class="${getWireClass(inputs.A)}" stroke-width="4" fill="none" />`;
+                if (!isG1Not) {
+                    html += `<path d="M ${btnX + btnW} ${wireBy} L ${g1X} ${wireBy}" class="${getWireClass(inputs.B)}" stroke-width="4" fill="none" />`;
+                }
+                
+                html += `<path d="M ${g1X + 100} ${g1OutY} L 360 ${g1OutY} L 360 ${g2In1Y} L ${g2X} ${g2In1Y}" class="${getWireClass(w1)}" stroke-width="4" fill="none" />`;
+                
+                if (!isG2Not) {
+                    html += `<path d="M ${btnX + btnW} ${wireCy} L ${g2X} ${wireCy}" class="${getWireClass(inputs.C)}" stroke-width="4" fill="none" />`;
+                }
+                
+                html += `<path d="M ${g2X + 100} ${outY} L 570 ${outY}" class="${getWireClass(y)}" stroke-width="4" fill="none" />`;
+                
+                html += `
+                        <g transform="translate(${g1X}, ${g1Y})"><text x="40" y="-10" class="fill-slate-400 font-bold" font-size="12">G1</text>${GATE_SVGS[gates.G1]}</g>
+                        <g transform="translate(${g2X}, ${g2Y})"><text x="40" y="-10" class="fill-slate-400 font-bold" font-size="12">G2</text>${GATE_SVGS[gates.G2]}</g>
+                        
+                        <circle cx="570" cy="${outY}" r="24" class="${getLedClass(y)}" stroke-width="4" />
+                        <text x="610" y="${outY + 7}" class="fill-slate-800 dark:fill-white font-mono font-bold" font-size="20">Y=${y}</text>
+                    </svg>
+                `;
+                
+                html += btn('A', btnX, wireAy - (btnH / 2));
+                if (!isG1Not) html += btn('B', btnX, wireBy - (btnH / 2));
+                if (!isG2Not) html += btn('C', btnX, wireCy - (btnH / 2));
+            }
+
+            container.innerHTML = html;
+            generateTruthTable();
+        }
+
+        function generateTruthTable() {
+            const { mode, inputs, gates } = circuitState;
+            const head = document.getElementById('tt-head');
+            const body = document.getElementById('tt-body');
+            const explain = document.getElementById('tt-explain');
+            
+            let vars = ['A'];
+            if (gates.G1 !== 'NOT') vars.push('B');
+            if (mode === 2 && gates.G2 !== 'NOT') vars.push('C');
+
+            let headHTML = '<tr>';
+            vars.forEach(v => headHTML += `<th class="py-2 text-slate-600 dark:text-slate-300 border-b border-slate-200 dark:border-slate-700">${v}</th>`);
+            
+            if (mode === 2) {
+                headHTML += `<th class="py-2 text-indigo-500 dark:text-indigo-400 border-b border-slate-200 dark:border-slate-700">W1</th>`;
+            }
+            headHTML += `<th class="py-2 text-sky-600 dark:text-sky-400 border-b border-slate-200 dark:border-slate-700">Y</th></tr>`;
+            head.innerHTML = headHTML;
+
+            let bodyHTML = '';
+            const numRows = Math.pow(2, vars.length);
+            
+            for(let i=0; i<numRows; i++) {
+                let bin = i.toString(2).padStart(vars.length, '0').split('').map(Number);
+                let state = {};
+                vars.forEach((v, idx) => state[v] = bin[idx]);
+
+                let vA = state.A !== undefined ? state.A : 0;
+                let vB = state.B !== undefined ? state.B : 0;
+                let vC = state.C !== undefined ? state.C : 0;
+
+                let y = 0, w1 = 0;
+                if (mode === 1) {
+                    y = GATE_LOGIC[gates.G1].fn(vA===1, vB===1) ? 1 : 0;
+                } else if (mode === 2) {
+                    w1 = GATE_LOGIC[gates.G1].fn(vA===1, vB===1) ? 1 : 0;
+                    y = GATE_LOGIC[gates.G2].fn(w1===1, vC===1) ? 1 : 0;
+                }
+
+                let isActive = true;
+                vars.forEach(v => {
+                    if (state[v] !== inputs[v]) isActive = false;
+                });
+
+                let rowClass = isActive ? "bg-sky-100 dark:bg-sky-900/40 text-sky-700 dark:text-sky-400 font-bold" : "text-slate-600 dark:text-slate-300";
+                
+                let tr = `<tr class="${rowClass}">`;
+                vars.forEach(v => tr += `<td class="py-2 border-t border-slate-100 dark:border-slate-700/50">${state[v]}</td>`);
+                
+                if (mode === 2) {
+                     tr += `<td class="py-2 border-t border-slate-100 dark:border-slate-700/50 text-indigo-500 dark:text-indigo-400">${w1}</td>`;
+                }
+                
+                tr += `<td class="py-2 border-t border-slate-100 dark:border-slate-700/50">${y}</td></tr>`;
+                bodyHTML += tr;
+            }
+            body.innerHTML = bodyHTML;
+
+            if (mode === 1) {
+                let exp = gates.G1 === 'NOT' ? `!A` : `A ${GATE_LOGIC[gates.G1].exp} B`;
+                explain.innerHTML = `
+                    <div class="mb-1 text-slate-500 dark:text-slate-400">Rumus Persamaan:</div>
+                    <strong class="text-sky-600 dark:text-sky-400 text-sm">Y = ${exp}</strong>
+                `;
+            } else {
+                let exp1 = gates.G1 === 'NOT' ? `!A` : `A ${GATE_LOGIC[gates.G1].exp} B`;
+                let exp2 = gates.G2 === 'NOT' ? `!W1` : `W1 ${GATE_LOGIC[gates.G2].exp} C`;
+                explain.innerHTML = `
+                    <div class="mb-1 text-slate-500 dark:text-slate-400">Langkah Perhitungan:</div>
+                    <div class="flex flex-col gap-1">
+                        <div>1. Kabel Tengah: <strong class="text-indigo-500 dark:text-indigo-400">W1 = ${exp1}</strong></div>
+                        <div>2. Hasil Akhir: <strong class="text-sky-600 dark:text-sky-400">Y = ${exp2}</strong></div>
+                    </div>
+                `;
+            }
+        }
+
         const matrixSymbols = [
-            { dec: 0, hex: "0", bin: "0000" },
-            { dec: 1, hex: "1", bin: "0001" },
-            { dec: 2, hex: "2", bin: "0010" },
-            { dec: 3, hex: "3", bin: "0011" },
-            { dec: 4, hex: "4", bin: "0100" },
-            { dec: 5, hex: "5", bin: "0101" },
-            { dec: 6, hex: "6", bin: "0110" },
-            { dec: 7, hex: "7", bin: "0111" },
-            { dec: 8, hex: "8", bin: "1000" },
-            { dec: 9, hex: "9", bin: "1001" },
-            { dec: 10, hex: "A", bin: "1010" },
-            { dec: 11, hex: "B", bin: "1011" },
-            { dec: 12, hex: "C", bin: "1100" },
-            { dec: 13, hex: "D", bin: "1101" },
-            { dec: 14, hex: "E", bin: "1110" },
-            { dec: 15, hex: "F", bin: "1111" }
+            { d: 0, h: "0", b: "0000" }, { d: 1, h: "1", b: "0001" },
+            { d: 2, h: "2", b: "0010" }, { d: 3, h: "3", b: "0011" },
+            { d: 4, h: "4", b: "0100" }, { d: 5, h: "5", b: "0101" },
+            { d: 6, h: "6", b: "0110" }, { d: 7, h: "7", b: "0111" },
+            { d: 8, h: "8", b: "1000" }, { d: 9, h: "9", b: "1001" },
+            { d: 10, h: "A", b: "1010" }, { d: 11, h: "B", b: "1011" },
+            { d: 12, h: "C", b: "1100" }, { d: 13, h: "D", b: "1101" },
+            { d: 14, h: "E", b: "1110" }, { d: 15, h: "F", b: "1111" }
         ];
 
-        let currentPracticeTarget = { question: "", answer: "", hint: "" };
-        let chartPowersObj = null;
-        let chartCapacityObj = null;
-        let selectedMatrixIndex = 10; // Default index 10 ('A')
-
-        // Theme Switcher Logic
-        function toggleTheme() {
-            const htmlEl = document.documentElement;
-            const btnIcon = document.getElementById('theme-btn-icon');
-            const btnText = document.getElementById('theme-btn-text');
-
-            if (htmlEl.classList.contains('dark')) {
-                htmlEl.classList.remove('dark');
-                htmlEl.classList.add('light');
-                btnIcon.textContent = '🌙';
-                btnText.textContent = 'Mode Gelap';
-            } else {
-                htmlEl.classList.remove('light');
-                htmlEl.classList.add('dark');
-                btnIcon.textContent = '☀️';
-                btnText.textContent = 'Mode Terang';
-            }
-
-            renderMatrixButtons(); // Re-render matrix for dark styling
-            updateChartThemeColors();
-        }
-
-        // Initialize Application
-        document.addEventListener('DOMContentLoaded', () => {
-            renderMatrixButtons();
-            calculateMultiBase();
-            initCharts();
-            generatePracticeQuestion();
-        });
-
-        // Tab Switcher
-        function switchTab(tabName) {
-            const tabs = ['calculator', 'concepts', 'analytics', 'practice'];
-            tabs.forEach(t => {
-                const btn = document.getElementById(`tab-${t}`);
-                const sec = document.getElementById(`sec-${t}`);
-                if (t === tabName) {
-                    btn.classList.add('active');
-                    sec.classList.remove('hidden');
-                } else {
-                    btn.classList.remove('active');
-                    sec.classList.add('hidden');
-                }
-            });
-            if (tabName === 'analytics') {
-                setTimeout(updateCharts, 50);
-            }
-        }
-
-        // Handle Radix Change
-        function onRadixChange() {
-            const radix = document.getElementById('source-radix').value;
-            const input = document.getElementById('multi-input');
-            const badge = document.getElementById('input-radix-badge');
-
-            badge.textContent = radix;
-            if (radix === "2") {
-                input.value = "11010110";
-            } else if (radix === "10") {
-                input.value = "214";
-            } else {
-                input.value = "1F4A";
-            }
-            calculateMultiBase();
-        }
-
-        // Set Random Preset Input
-        function setRandomPreset() {
-            const radix = document.getElementById('source-radix').value;
-            const input = document.getElementById('multi-input');
-            
-            if (radix === "2") {
-                const presets = ["1010", "1101", "10011", "11001100", "10101010", "11110000", "10000111"];
-                input.value = presets[Math.floor(Math.random() * presets.length)];
-            } else if (radix === "10") {
-                const presets = ["26", "63", "180", "255", "712", "1185", "8010"];
-                input.value = presets[Math.floor(Math.random() * presets.length)];
-            } else {
-                const presets = ["1A", "3F", "B4", "E2", "105", "2C8", "4A1", "D05", "1F4A", "FF"];
-                input.value = presets[Math.floor(Math.random() * presets.length)];
-            }
-            calculateMultiBase();
-        }
-
-        // Multi-Base Converter Core
-        function calculateMultiBase() {
-            const radix = parseInt(document.getElementById('source-radix').value, 10);
-            let inputVal = document.getElementById('multi-input').value.trim().toUpperCase();
-            
-            const resDec = document.getElementById('res-dec');
-            const resBin = document.getElementById('res-bin');
-            const resHex = document.getElementById('res-hex');
-            const formulaText = document.getElementById('calc-formula-text');
-            const tableBody = document.getElementById('calc-table-body');
-            const tableTitle = document.getElementById('table-title');
-            const barsContainer = document.getElementById('calc-contribution-bars');
-
-            // Regex validation per radix
-            let validRegex = /^[0-9A-F]+$/;
-            if (radix === 2) validRegex = /^[01]+$/;
-            if (radix === 10) validRegex = /^[0-9]+$/;
-
-            if (!inputVal || !validRegex.test(inputVal)) {
-                tableBody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-rose-500 text-xs font-sans">Masukkan karakter valid untuk Basis ${radix}</td></tr>`;
-                resDec.textContent = "N/A";
-                resBin.textContent = "N/A";
-                resHex.textContent = "N/A";
-                formulaText.innerHTML = "Format input tidak sesuai dengan basis yang dipilih";
-                barsContainer.innerHTML = '';
-                return;
-            }
-
-            // Parse integer value
-            const decimalVal = parseInt(inputVal, radix);
-
-            // Format cross-base results
-            resDec.textContent = decimalVal.toLocaleString();
-            
-            // Format Binary with spaces every 4 bits
-            const rawBin = decimalVal.toString(2);
-            const paddedBin = rawBin.padStart(Math.ceil(rawBin.length / 4) * 4, '0');
-            const formattedBin = paddedBin.match(/.{1,4}/g)?.join(' ') || rawBin;
-            resBin.textContent = formattedBin;
-
-            resHex.textContent = decimalVal.toString(16).toUpperCase();
-
-            // Table & Breakdown
-            tableTitle.textContent = `Rincian Bobot Posisional Input Basis ${radix}`;
-            tableBody.innerHTML = '';
-            barsContainer.innerHTML = '';
-
-            const len = inputVal.length;
-            const steps = [];
-
-            for (let i = 0; i < len; i++) {
-                const char = inputVal[i];
-                const position = len - 1 - i;
-                const charValue = parseInt(char, radix);
-                const powerVal = Math.pow(radix, position);
-                const stepResult = charValue * powerVal;
-
-                steps.push({ char, charValue, position, powerVal, stepResult });
-
-                const tr = document.createElement('tr');
-                tr.className = i % 2 === 0 ? 'bg-white dark:bg-stone-900' : 'bg-stone-50/70 dark:bg-stone-800/40';
-                tr.innerHTML = `
-                    <td class="p-3 text-stone-600 dark:text-stone-400">${position} ${position === 0 ? '<span class="text-[10px] bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 px-1 rounded">LSB/LSD</span>' : (i === 0 ? '<span class="text-[10px] bg-indigo-100 dark:bg-indigo-950 text-indigo-800 dark:text-indigo-300 px-1 rounded">MSB/MSD</span>' : '')}</td>
-                    <td class="p-3 font-bold text-indigo-700 dark:text-indigo-400">${char}</td>
-                    <td class="p-3 text-stone-800 dark:text-stone-200">${charValue}</td>
-                    <td class="p-3 text-stone-600 dark:text-stone-400">${radix}<sup>${position}</sup></td>
-                    <td class="p-3 text-stone-600 dark:text-stone-400">${powerVal.toLocaleString()}</td>
-                    <td class="p-3 text-right font-bold text-stone-900 dark:text-stone-100">${stepResult.toLocaleString()}</td>
-                `;
-                tableBody.appendChild(tr);
-            }
-
-            // Formula summary
-            const formulaParts = steps.map(s => `(${s.charValue}×${s.powerVal.toLocaleString()})`);
-            formulaText.innerHTML = `${inputVal}<sub>${radix}</sub> = ${formulaParts.join(' + ')} = ${decimalVal.toLocaleString()}<sub>10</sub>`;
-
-            // Contribution Bars
-            steps.forEach(s => {
-                const percentage = decimalVal > 0 ? ((s.stepResult / decimalVal) * 100).toFixed(1) : 0;
-                const barRow = document.createElement('div');
-                barRow.className = "flex items-center space-x-3 text-xs font-sans";
-                barRow.innerHTML = `
-                    <div class="w-28 font-mono font-bold text-stone-700 dark:text-stone-300">Digit '${s.char}' (${radix}<sup>${s.position}</sup>)</div>
-                    <div class="flex-grow bg-stone-100 dark:bg-stone-800 rounded-full h-3 overflow-hidden border border-stone-200 dark:border-stone-700">
-                        <div class="bg-indigo-600 dark:bg-indigo-500 h-full rounded-full transition-all duration-500" style="width: ${percentage}%"></div>
-                    </div>
-                    <div class="w-24 text-right font-mono font-semibold text-stone-800 dark:text-stone-200">${s.stepResult.toLocaleString()} (${percentage}%)</div>
-                `;
-                barsContainer.appendChild(barRow);
-            });
-        }
-
-        // Render 0-15 Matrix Buttons
-        function renderMatrixButtons() {
-            const container = document.getElementById('matrix-buttons');
-            const isDark = document.documentElement.classList.contains('dark');
+        function initMatrix() {
+            const container = document.getElementById('matrix-container');
             container.innerHTML = '';
-
-            matrixSymbols.forEach((s, idx) => {
-                const btn = document.createElement('button');
-                let baseClasses = "p-2 text-center font-mono font-bold rounded border text-xs sm:text-sm transition-all ";
-                
-                if (s.dec >= 10) {
-                    baseClasses += isDark 
-                        ? "bg-indigo-950/80 border-indigo-800 text-indigo-300 hover:bg-indigo-900 " 
-                        : "bg-indigo-50 border-indigo-200 text-indigo-700 hover:bg-indigo-100 ";
-                } else {
-                    baseClasses += isDark 
-                        ? "bg-stone-900 border-stone-800 text-stone-200 hover:bg-stone-800 " 
-                        : "bg-white border-stone-200 text-stone-800 hover:bg-stone-100 ";
-                }
-
-                if (idx === selectedMatrixIndex) {
-                    baseClasses += isDark ? "ring-2 ring-indigo-400 border-indigo-400 " : "ring-2 ring-indigo-600 border-indigo-600 ";
-                }
-
-                btn.className = baseClasses;
-                btn.textContent = `${s.dec}`;
-                btn.onclick = () => {
-                    selectedMatrixIndex = idx;
-                    inspectMatrixItem(s);
-                    renderMatrixButtons();
-                };
-                container.appendChild(btn);
+            matrixSymbols.forEach(s => {
+                const div = document.createElement('div');
+                div.className = "flex flex-col items-center p-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md transition-colors";
+                div.innerHTML = `
+                    <span class="text-[10px] text-slate-500 dark:text-slate-400">Des ${s.d}</span>
+                    <span class="text-lg font-bold font-mono leading-tight">${s.h}</span>
+                    <span class="text-[10px] font-mono text-sky-600 dark:text-sky-400">${s.b}</span>
+                `;
+                container.appendChild(div);
             });
-
-            inspectMatrixItem(matrixSymbols[selectedMatrixIndex]);
         }
 
-        function inspectMatrixItem(s) {
-            document.getElementById('inspect-dec').textContent = s.dec;
-            document.getElementById('inspect-hex').textContent = s.hex;
-            document.getElementById('inspect-bin').textContent = s.bin;
+        function onBaseChange() {
+            const base = document.getElementById('calc-base').value;
+            const input = document.getElementById('calc-input');
+            if (base === '2') input.value = '1011';
+            else if (base === '10') input.value = '175';
+            else input.value = '1A3';
+            calculateConversion();
+        }
 
-            const bitBoxes = document.getElementById('bit-boxes');
-            const isDark = document.documentElement.classList.contains('dark');
-            bitBoxes.innerHTML = '';
+        function calculateConversion() {
+            const base = parseInt(document.getElementById('calc-base').value, 10);
+            let inputStr = document.getElementById('calc-input').value.trim().toUpperCase();
             
-            for (let i = 0; i < 4; i++) {
-                const bit = s.bin[i];
-                const box = document.createElement('div');
-                let boxStyles = "w-8 h-8 rounded flex items-center justify-center border text-xs ";
-                
-                if (bit === '1') {
-                    boxStyles += isDark 
-                        ? "bg-emerald-600 text-white border-emerald-500 shadow-sm" 
-                        : "bg-emerald-600 text-white border-emerald-700 shadow-sm";
-                } else {
-                    boxStyles += isDark 
-                        ? "bg-stone-800 text-stone-500 border-stone-700" 
-                        : "bg-stone-100 text-stone-400 border-stone-300";
-                }
+            const rBin = document.getElementById('res-bin');
+            const rDec = document.getElementById('res-dec');
+            const rHex = document.getElementById('res-hex');
+            const table = document.getElementById('calc-table');
+            const formula = document.getElementById('calc-formula');
+            const err = document.getElementById('calc-error');
 
-                box.className = boxStyles;
-                box.textContent = bit;
-                bitBoxes.appendChild(box);
-            }
-        }
+            let regex = /^[0-9A-F]+$/;
+            if (base === 2) regex = /^[01]+$/;
+            if (base === 10) regex = /^[0-9]+$/;
 
-        // Get Theme Color Scheme for Charts
-        function getChartColors() {
-            const isDark = document.documentElement.classList.contains('dark');
-            return {
-                textColor: isDark ? '#e7e5e4' : '#44403c',
-                gridColor: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
-            };
-        }
-
-        function updateChartThemeColors() {
-            if (!chartPowersObj || !chartCapacityObj) return;
-            const colors = getChartColors();
-
-            // Update Chart 1
-            chartPowersObj.options.scales.x.ticks.color = colors.textColor;
-            chartPowersObj.options.scales.x.grid.color = colors.gridColor;
-            chartPowersObj.options.scales.y.ticks.color = colors.textColor;
-            chartPowersObj.options.scales.y.grid.color = colors.gridColor;
-            chartPowersObj.options.scales.y.title.color = colors.textColor;
-            chartPowersObj.options.plugins.legend.labels.color = colors.textColor;
-            chartPowersObj.update();
-
-            // Update Chart 2
-            chartCapacityObj.options.scales.x.ticks.color = colors.textColor;
-            chartCapacityObj.options.scales.x.grid.color = colors.gridColor;
-            chartCapacityObj.options.scales.y.ticks.color = colors.textColor;
-            chartCapacityObj.options.scales.y.grid.color = colors.gridColor;
-            chartCapacityObj.options.scales.y.title.color = colors.textColor;
-            chartCapacityObj.update();
-        }
-
-        // Initialize Chart.js
-        function initCharts() {
-            const colors = getChartColors();
-
-            // Chart 1: Exponential Growth Comparison
-            const ctxPowers = document.getElementById('chartPowers').getContext('2d');
-            chartPowersObj = new Chart(ctxPowers, {
-                type: 'line',
-                data: {
-                    labels: ['Posisi 0', 'Posisi 1', 'Posisi 2', 'Posisi 3', 'Posisi 4'],
-                    datasets: [
-                        {
-                            label: 'Basis 2 (2ⁿ)',
-                            data: [1, 2, 4, 8, 16],
-                            borderColor: '#10b981',
-                            backgroundColor: '#10b981',
-                            tension: 0.2
-                        },
-                        {
-                            label: 'Basis 10 (10ⁿ)',
-                            data: [1, 10, 100, 1000, 10000],
-                            borderColor: '#f59e0b',
-                            backgroundColor: '#f59e0b',
-                            tension: 0.2
-                        },
-                        {
-                            label: 'Basis 16 (16ⁿ)',
-                            data: [1, 16, 256, 4096, 65536],
-                            borderColor: '#6366f1',
-                            backgroundColor: '#6366f1',
-                            tension: 0.2
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { 
-                            position: 'bottom',
-                            labels: { color: colors.textColor }
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: function(ctx) {
-                                    return ` ${ctx.dataset.label}: ${ctx.raw.toLocaleString()}`;
-                                }
-                            }
-                        }
-                    },
-                    scales: {
-                        x: {
-                            ticks: { color: colors.textColor },
-                            grid: { color: colors.gridColor }
-                        },
-                        y: {
-                            type: 'logarithmic',
-                            ticks: { color: colors.textColor },
-                            grid: { color: colors.gridColor },
-                            title: { display: true, text: 'Nilai Bobot (Skala Logaritmik)', color: colors.textColor }
-                        }
-                    }
-                }
-            });
-
-            // Chart 2: System Capacity Limits
-            const ctxCapacity = document.getElementById('chartCapacity').getContext('2d');
-            chartCapacityObj = new Chart(ctxCapacity, {
-                type: 'bar',
-                data: {
-                    labels: ['4 Bit Biner', '8 Bit Biner', '2 Digit Hex', '3 Digit Desimal', '4 Digit Hex'],
-                    datasets: [{
-                        label: 'Kapasitas Nilai Desimal Maksimum',
-                        data: [15, 255, 255, 999, 65535],
-                        backgroundColor: ['#10b981', '#059669', '#6366f1', '#f59e0b', '#4338ca'],
-                        borderRadius: 6
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: {
-                            callbacks: {
-                                label: function(ctx) {
-                                    return ` Max Desimal: ${ctx.raw.toLocaleString()}`;
-                                }
-                            }
-                        }
-                    },
-                    scales: {
-                        x: {
-                            ticks: { color: colors.textColor },
-                            grid: { color: colors.gridColor }
-                        },
-                        y: {
-                            beginAtZero: true,
-                            type: 'logarithmic',
-                            ticks: { color: colors.textColor },
-                            grid: { color: colors.gridColor },
-                            title: { display: true, text: 'Nilai Maksimum (Skala Logaritmik)', color: colors.textColor }
-                        }
-                    }
-                }
-            });
-        }
-
-        function updateCharts() {
-            if (chartPowersObj) chartPowersObj.update();
-            if (chartCapacityObj) chartCapacityObj.update();
-        }
-
-        // Practice Generator Logic
-        function generatePracticeQuestion() {
-            const type = document.getElementById('practice-type').value;
-            const qDisplay = document.getElementById('practice-question-display');
-            document.getElementById('practice-user-input').value = '';
-            document.getElementById('practice-feedback').className = 'hidden';
-            document.getElementById('practice-solution-box').className = 'hidden';
-
-            let randDec = 0;
-            if (type === 'bin2dec' || type === 'dec2bin') {
-                randDec = Math.floor(Math.random() * 250) + 5; // 5 to 255
-            } else {
-                randDec = Math.floor(Math.random() * 3800) + 20; // 20 to 3800
-            }
-
-            if (type === 'bin2dec') {
-                const bin = randDec.toString(2);
-                currentPracticeTarget = {
-                    question: `${bin}₂`,
-                    answer: randDec.toString(10),
-                    hint: `Kalikan setiap bit biner dengan perpangkatan 2 (128, 64, 32, 16, 8, 4, 2, 1) lalu jumlahkan.`
-                };
-            } else if (type === 'dec2bin') {
-                currentPracticeTarget = {
-                    question: `${randDec}₁₀`,
-                    answer: randDec.toString(2),
-                    hint: `Bagi dengan 2 secara berulang dan ambil sisa pembagiannya dari bawah ke atas, atau gunakan metode pengurangan kelipatan 2.`
-                };
-            } else if (type === 'hex2dec') {
-                const hex = randDec.toString(16).toUpperCase();
-                currentPracticeTarget = {
-                    question: `${hex}₁₆`,
-                    answer: randDec.toString(10),
-                    hint: `Kalikan digit dari kanan dengan 16⁰, 16¹, 16² (ingat A=10, B=11, C=12, D=13, E=14, F=15).`
-                };
-            } else if (type === 'dec2hex') {
-                currentPracticeTarget = {
-                    question: `${randDec}₁₀`,
-                    answer: randDec.toString(16).toUpperCase(),
-                    hint: `Bagi angka desimal dengan 16 berturut-turut, lalu tulis sisa pembagiannya dalam kode hex (10=A..15=F).`
-                };
-            } else if (type === 'bin2hex') {
-                const bin = randDec.toString(2);
-                currentPracticeTarget = {
-                    question: `${bin}₂`,
-                    answer: randDec.toString(16).toUpperCase(),
-                    hint: `Kelompokkan bit biner dari kanan menjadi 4 bit (nibble), lalu ubah setiap 4 bit langsung ke huruf/angka heksadesimal.`
-                };
-            }
-
-            qDisplay.textContent = `${currentPracticeTarget.question} = ...`;
-        }
-
-        function checkPracticeAnswer() {
-            const userInput = document.getElementById('practice-user-input').value.trim().toUpperCase();
-            const feedback = document.getElementById('practice-feedback');
-            const solutionBox = document.getElementById('practice-solution-box');
-
-            if (!userInput) {
-                feedback.className = "p-3 rounded-lg text-sm bg-amber-100 dark:bg-amber-950/80 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800";
-                feedback.textContent = "Silakan masukkan jawaban Anda terlebih dahulu.";
+            if (!inputStr || !regex.test(inputStr)) {
+                err.classList.remove('hidden');
+                rBin.textContent = '-'; rDec.textContent = '-'; rHex.textContent = '-';
+                table.innerHTML = ''; formula.innerHTML = '';
                 return;
             }
+            err.classList.add('hidden');
 
-            if (userInput === currentPracticeTarget.answer) {
-                feedback.className = "p-3 rounded-lg text-sm bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 font-bold";
-                feedback.textContent = `🎉 Benar sekali! Jawaban ${userInput} tepat.`;
+            const decimalValue = parseInt(inputStr, base);
+            rDec.textContent = decimalValue.toLocaleString();
+            rHex.textContent = decimalValue.toString(16).toUpperCase();
+            
+            let binStr = decimalValue.toString(2);
+            binStr = binStr.padStart(Math.ceil(binStr.length / 4) * 4, '0');
+            rBin.textContent = binStr.match(/.{1,4}/g)?.join(' ') || binStr;
+
+            table.innerHTML = '';
+            let formulaArr = [];
+
+            for (let i = 0; i < inputStr.length; i++) {
+                const char = inputStr[i];
+                const position = inputStr.length - 1 - i;
+                const charVal = parseInt(char, base);
+                const power = Math.pow(base, position);
+                const result = charVal * power;
+
+                formulaArr.push(`(${charVal} &times; ${base}<sup>${position}</sup>)`);
+
+                table.innerHTML += `
+                    <tr class="text-slate-600 dark:text-slate-300">
+                        <td class="py-2 pr-2 border-t border-slate-100 dark:border-slate-700/50">${position}</td>
+                        <td class="py-2 px-2 font-bold border-t border-slate-100 dark:border-slate-700/50">${char}</td>
+                        <td class="py-2 px-2 border-t border-slate-100 dark:border-slate-700/50">${base}<sup>${position}</sup> = ${power.toLocaleString()}</td>
+                        <td class="py-2 pl-2 text-right text-emerald-600 dark:text-emerald-400 font-bold border-t border-slate-100 dark:border-slate-700/50">${result.toLocaleString()}</td>
+                    </tr>
+                `;
+            }
+            formula.innerHTML = `${inputStr}<sub>${base}</sub> = ${formulaArr.join(' + ')} = ${decimalValue.toLocaleString()}<sub>10</sub>`;
+        }
+
+        let currentQuiz = {};
+        
+        function generateQuiz() {
+            const mode = document.getElementById('quiz-mode').value;
+            document.getElementById('quiz-container').classList.remove('hidden');
+            document.getElementById('quiz-feedback').classList.add('hidden');
+            document.getElementById('quiz-answer').value = '';
+            
+            let qVal = 0, qStr = "", ansStr = "";
+            
+            if(mode === 'b2d' || mode === 'd2b' || mode === 'b2h' || mode === 'h2b') {
+                qVal = Math.floor(Math.random() * 255) + 1;
             } else {
-                feedback.className = "p-3 rounded-lg text-sm bg-rose-100 dark:bg-rose-950/80 text-rose-800 dark:text-rose-300 border border-rose-200 dark:border-rose-800";
-                feedback.textContent = `❌ Belum tepat. Jawaban Anda (${userInput}) berbeda dari jawaban yang benar (${currentPracticeTarget.answer}).`;
+                qVal = Math.floor(Math.random() * 4095) + 1;
             }
 
-            solutionBox.innerHTML = `
-                <div class="font-bold text-stone-800 dark:text-stone-200 mb-1">Panduan & Kunci Jawaban:</div>
-                <div class="text-indigo-700 dark:text-indigo-400 font-bold">Jawaban Benar: ${currentPracticeTarget.answer}</div>
-                <div class="text-stone-600 dark:text-stone-400 mt-1">${currentPracticeTarget.hint}</div>
-            `;
-            solutionBox.classList.remove('hidden');
+            if (mode === 'b2d') {
+                qStr = qVal.toString(2) + " (Biner)"; ansStr = qVal.toString(10);
+            } else if (mode === 'd2b') {
+                qStr = qVal.toString(10) + " (Desimal)"; ansStr = qVal.toString(2);
+            } else if (mode === 'h2d') {
+                qStr = qVal.toString(16).toUpperCase() + " (Heksa)"; ansStr = qVal.toString(10);
+            } else if (mode === 'd2h') {
+                qStr = qVal.toString(10) + " (Desimal)"; ansStr = qVal.toString(16).toUpperCase();
+            } else if (mode === 'b2h') {
+                let bin = qVal.toString(2);
+                qStr = bin + " (Biner)"; ansStr = qVal.toString(16).toUpperCase();
+            } else if (mode === 'h2b') {
+                let hex = qVal.toString(16).toUpperCase();
+                qStr = hex + " (Heksa)"; ansStr = qVal.toString(2);
+            }
+
+            currentQuiz = { q: qStr, a: ansStr };
+            document.getElementById('quiz-question').textContent = qStr;
+        }
+
+        function checkQuiz() {
+            const userAns = document.getElementById('quiz-answer').value.trim().toUpperCase();
+            const fb = document.getElementById('quiz-feedback');
+            
+            fb.classList.remove('hidden');
+            if(userAns === currentQuiz.a) {
+                fb.textContent = "✅ Benar!";
+                fb.className = "mt-3 p-2 rounded text-sm font-bold text-center bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800";
+            } else {
+                fb.textContent = `❌ Salah. Jawaban: ${currentQuiz.a}`;
+                fb.className = "mt-3 p-2 rounded text-sm font-bold text-center bg-rose-100 dark:bg-rose-900/40 text-rose-700 dark:text-rose-400 border border-rose-200 dark:border-rose-800";
+            }
+        }
+
+        window.onload = function() {
+            // Theme remains Light by default on initial load
+            document.documentElement.classList.remove('dark');
+            
+            initMatrix();
+            calculateConversion();
+            initGateControls();
+            renderCircuit();
         }
     </script>
 </body>
